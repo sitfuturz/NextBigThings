@@ -412,11 +412,6 @@ export class RegisterComponent implements OnInit, AfterViewInit {
     }
   }
 
-  deleteUser(userId: string): void {
-    // TODO: Implement delete user functionality
-    console.log('Delete user:', userId);
-    swalHelper.showToast('Delete user functionality coming soon', 'info');
-  }
 
   onMobileInput(event: any): void {
     const input = event.target;
