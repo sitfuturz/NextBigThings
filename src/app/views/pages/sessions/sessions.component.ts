@@ -6,6 +6,7 @@ import { swalHelper } from '../../../core/constants/swal-helper';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { debounceTime, Subject } from 'rxjs';
+import { environment } from 'src/env/env.local';
 
 declare var $: any;
 declare var bootstrap: any;
@@ -38,7 +39,14 @@ export class SessionsComponent implements OnInit, AfterViewInit {
   selectedDate: string = '';
   selectedSession: Session | null = null;
   sessionModal: any;
+  filePreviewModal: any;
+  urlFilesModal: any;
   editMode: boolean = false;
+  
+  // File preview properties
+  previewFileUrl: string = '';
+  previewFileName: string = '';
+  previewFileType: 'image' | 'video' | 'file' = 'file';
   
   newSession = {
     title: '',
@@ -88,10 +96,31 @@ export class SessionsComponent implements OnInit, AfterViewInit {
     // Initialize modal properly with a delay to ensure DOM is fully loaded
     setTimeout(() => {
       const modalElement = document.getElementById('sessionModal');
+      const filePreviewElement = document.getElementById('filePreviewModal');
+      const urlFilesElement = document.getElementById('urlFilesModal');
+      
       if (modalElement) {
         this.sessionModal = new bootstrap.Modal(modalElement);
       } else {
-        console.warn('Modal element not found in the DOM');
+        console.warn('Session modal element not found in the DOM');
+      }
+      
+      if (filePreviewElement) {
+        this.filePreviewModal = new bootstrap.Modal(filePreviewElement, {
+          backdrop: false,
+          keyboard: false
+        });
+      } else {
+        console.warn('File preview modal element not found in the DOM');
+      }
+      
+      if (urlFilesElement) {
+        this.urlFilesModal = new bootstrap.Modal(urlFilesElement, {
+          backdrop: false,
+          keyboard: false
+        });
+      } else {
+        console.warn('URL Files modal element not found in the DOM');
       }
     }, 300);
   }
@@ -337,7 +366,13 @@ export class SessionsComponent implements OnInit, AfterViewInit {
   // Format date helper function
   formatDate(dateString: string): string {
     if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString();
+    
+    const date = new Date(dateString);
+    const day = date.getDate();
+    const month = date.toLocaleString('default', { month: 'long' });
+    const year = date.getFullYear();
+    
+    return `${day} ${month} ${year}`;
   }
 
   formatDateOnly(dateString: string): string {
@@ -354,5 +389,147 @@ export class SessionsComponent implements OnInit, AfterViewInit {
     const date = new Date(dateString);
     const time = timeString;
     return `${date.toLocaleDateString()} ${time}`;
+  }
+
+  // File preview methods
+  getFileUrl(filePath: string): string {
+    if (!filePath) return '';
+    
+    // If URL is already a full URL, return as is
+    if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+      return filePath;
+    }
+    
+    // Use environment imageUrl as base URL
+    const baseUrl = environment.imageUrl;
+    const cleanPath = filePath.startsWith('/') ? filePath.substring(1) : filePath;
+    return `${baseUrl}${cleanPath}`;
+  }
+
+  isImageFile(fileName: string): boolean {
+    if (!fileName) return false;
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'];
+    const extension = fileName.toLowerCase().substring(fileName.lastIndexOf('.'));
+    return imageExtensions.includes(extension);
+  }
+
+  openFilePreview(filePath: string, type: 'image' | 'video' | 'file'): void {
+    // Close the URL Files modal first if it's open
+    if (this.urlFilesModal) {
+      this.urlFilesModal.hide();
+    }
+    
+    this.previewFileUrl = this.getFileUrl(filePath);
+    this.previewFileName = filePath.split('/').pop() || filePath;
+    this.previewFileType = type;
+    
+    if (this.filePreviewModal) {
+      this.filePreviewModal.show();
+    } else {
+      try {
+        const modalElement = document.getElementById('filePreviewModal');
+        if (modalElement) {
+          const modalInstance = new bootstrap.Modal(modalElement, {
+            backdrop: false,
+            keyboard: false
+          });
+          this.filePreviewModal = modalInstance;
+          modalInstance.show();
+        } else {
+          $('#filePreviewModal').modal({backdrop: false, keyboard: false}).modal('show');
+        }
+      } catch (error) {
+        console.error('Error showing file preview modal:', error);
+        $('#filePreviewModal').modal({backdrop: false, keyboard: false}).modal('show');
+      }
+    }
+  }
+
+  openUrlFilesModal(session: Session): void {
+    // Close the file preview modal first if it's open
+    if (this.filePreviewModal) {
+      this.filePreviewModal.hide();
+    }
+    
+    this.selectedSession = session;
+    
+    if (this.urlFilesModal) {
+      this.urlFilesModal.show();
+    } else {
+      try {
+        const modalElement = document.getElementById('urlFilesModal');
+        if (modalElement) {
+          const modalInstance = new bootstrap.Modal(modalElement, {
+            backdrop: false,
+            keyboard: false
+          });
+          this.urlFilesModal = modalInstance;
+          modalInstance.show();
+        } else {
+          $('#urlFilesModal').modal({backdrop: false, keyboard: false}).modal('show');
+        }
+      } catch (error) {
+        console.error('Error showing URL Files modal:', error);
+        $('#urlFilesModal').modal({backdrop: false, keyboard: false}).modal('show');
+      }
+    }
+  }
+
+  goBackToUrlFilesModal(): void {
+    // Close the file preview modal
+    if (this.filePreviewModal) {
+      this.filePreviewModal.hide();
+    }
+    
+    // Reopen the URL Files modal
+    if (this.urlFilesModal) {
+      this.urlFilesModal.show();
+    }
+  }
+
+  async toggleSessionPremiumStatus(session: Session): Promise<void> {
+    try {
+      const newPremiumStatus = !session.isPremium;
+      const statusText = newPremiumStatus ? 'Premium' : 'Free';
+      
+      const result = await swalHelper.confirmation(
+        'Toggle Session Status',
+        `Are you sure you want to change this session to ${statusText}?`,
+        'question'
+      );
+      
+      if (result.isConfirmed) {
+        this.loading = true;
+        
+        try {
+          const formData = new FormData();
+          formData.append('title', session.title);
+          formData.append('description', session.description || '');
+          formData.append('url', session.url || '');
+          formData.append('categoryId', session.categoryId && typeof session.categoryId === 'object' ? session.categoryId._id : session.categoryId || '');
+          formData.append('isPremium', newPremiumStatus.toString());
+          formData.append('date', session.date ? new Date(session.date).toISOString().slice(0, 10) : '');
+          formData.append('startTime', session.startTime || '');
+          formData.append('endTime', session.endTime || '');
+          
+          const response = await this.sessionService.updateSession(session._id, formData);
+          
+          if (response && response.success) {
+            // Update the session object in the local array
+            session.isPremium = newPremiumStatus;
+            swalHelper.showToast(`Session status changed to ${statusText}`, 'success');
+          } else {
+            swalHelper.showToast(response.message || 'Failed to update session status', 'error');
+          }
+        } catch (error) {
+          console.error('Error updating session status:', error);
+          swalHelper.showToast('Failed to update session status', 'error');
+        } finally {
+          this.loading = false;
+        }
+      }
+    } catch (error) {
+      console.error('Confirmation dialog error:', error);
+    }
   }
 }
