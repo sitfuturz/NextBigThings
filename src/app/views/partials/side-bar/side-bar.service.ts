@@ -115,6 +115,11 @@ export class SideBarService {
               icon: 'tag',
             },
             {
+              title: 'Sessions',
+              link: 'sessions',
+              icon: 'play-circle',
+            },
+            {
               title: 'Batches',
               link: 'batch',
               icon: 'collection',

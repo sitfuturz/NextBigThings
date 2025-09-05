@@ -1503,6 +1503,37 @@ export class EventService {
     createdAt: string;
     __v: number;
   }
+
+  export interface SessionResponse {
+    docs: Session[];
+    totalDocs: string | number;
+    limit: number;
+    page: number;
+    totalPages: number;
+    pagingCounter: number;
+    hasPrevPage: boolean;
+    hasNextPage: boolean;
+    prevPage: number | null;
+    nextPage: number | null;
+  }
+
+  export interface Session {
+    _id: string;
+    title: string;
+    description?: string;
+    url: string;
+    categoryId: { _id: string; name: string };
+    isPremium: boolean;
+    uploadedBy: string | { _id: string; name: string; email: string };
+    date: string;
+    startTime: string;
+    endTime: string;
+    thumbnail?: string;
+    files?: string[];
+    videos?: string[];
+    createdAt: string;
+    __v: number;
+  }
   
   @Injectable({
     providedIn: 'root',
@@ -1638,8 +1669,134 @@ export class EventService {
         swalHelper.showToast('Failed to delete category', 'error');
         throw error;
       }
-    }}
-    export interface CityResponse {
+    }
+  }
+
+  @Injectable({
+    providedIn: 'root',
+  })
+  export class SessionService {
+    private headers: any = [];
+    
+    constructor(private apiManager: ApiManager, private storage: AppStorage) {}
+    
+    private getHeaders = () => {
+      this.headers = [];
+      const token = this.storage.get('token');
+      if (token != null) {
+        this.headers.push({ Authorization: `Bearer ${token}` });
+      }
+    };
+
+    async getSessions(data: { page: number; limit: number; search?: string; categoryId?: string | null; isPremium?: boolean | null; date?: string | null }): Promise<SessionResponse> {
+      try {
+        this.getHeaders();
+        
+        const response = await this.apiManager.request(
+          {
+            url: apiEndpoints.GET_SESSIONS,
+            method: 'POST',
+          },
+          data,
+          this.headers
+        );
+        
+        return response.data || response;
+      } catch (error) {
+        console.error('Get Sessions Error:', error);
+        swalHelper.showToast('Failed to fetch sessions', 'error');
+        throw error;
+      }
+    }
+
+    async createSession(formData: FormData): Promise<any> {
+      try {
+        this.getHeaders();
+        
+        const response = await this.apiManager.request(
+          {
+            url: apiEndpoints.CREATE_SESSION,
+            method: 'POST',
+          },
+          formData,
+          this.headers
+        );
+        
+        return response;
+      } catch (error) {
+        console.error('Create Session Error:', error);
+        swalHelper.showToast('Failed to create session', 'error');
+        throw error;
+      }
+    }
+
+    async updateSession(id: string, formData: FormData): Promise<any> {
+      try {
+        this.getHeaders();
+        
+        formData.append('sessionId', id);
+        
+        const response = await this.apiManager.request(
+          {
+            url: apiEndpoints.UPDATE_SESSION,
+            method: 'POST',
+          },
+          formData,
+          this.headers
+        );
+        
+        return response;
+      } catch (error) {
+        console.error('Update Session Error:', error);
+        swalHelper.showToast('Failed to update session', 'error');
+        throw error;
+      }
+    }
+
+    async deleteSession(id: string): Promise<any> {
+      try {
+        this.getHeaders();
+        
+        const response = await this.apiManager.request(
+          {
+            url: apiEndpoints.DELETE_SESSION,
+            method: 'POST',
+          },
+          { sessionId: id },
+          this.headers
+        );
+        
+        return response;
+      } catch (error) {
+        console.error('Delete Session Error:', error);
+        swalHelper.showToast('Failed to delete session', 'error');
+        throw error;
+      }
+    }
+
+    async getSessionById(id: string): Promise<any> {
+      try {
+        this.getHeaders();
+        
+        const response = await this.apiManager.request(
+          {
+            url: apiEndpoints.GET_SESSION_BY_ID,
+            method: 'POST',
+          },
+          { id },
+          this.headers
+        );
+        
+        return response;
+      } catch (error) {
+        console.error('Get Session By ID Error:', error);
+        swalHelper.showToast('Failed to fetch session details', 'error');
+        throw error;
+      }
+    }
+  }
+
+  export interface CityResponse {
       docs: City[];
       totalDocs: string | number;
       limit: number;

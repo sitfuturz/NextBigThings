@@ -71,6 +71,14 @@ class ApiEndpoints {
   public UPDATE_CATEGORY: string = `${this.PATH}/updateCategory`
   public DELETE_CATEGORY: string = `${this.PATH}/deleteCategory`
   public GET_CATEGORY_BY_ID: string = `${this.PATH}/getCategoryById`
+
+  // Session Management
+  public CREATE_SESSION: string = `${this.PATH}/session/create`
+  public GET_SESSIONS: string = `${this.PATH}/session/list`
+  public UPDATE_SESSION: string = `${this.PATH}/session/update`
+  public DELETE_SESSION: string = `${this.PATH}/session/delete`
+  public GET_SESSION_BY_ID: string = `${this.PATH}/session/get-by-id`
+
   public CREATE_CITY: string = `${this.PATH}/createCity`
   public GET_ALL_CITIES: string = `${this.PATH}/getCities`
   public GET_CITY_BY_ID: string = `${this.PATH}/getCityById`
