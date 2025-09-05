@@ -120,6 +120,11 @@ export class SideBarService {
               icon: 'play-circle',
             },
             {
+              title: 'Videos',
+              link: 'videos',
+              icon: 'video',
+            },
+            {
               title: 'Batches',
               link: 'batch',
               icon: 'collection',

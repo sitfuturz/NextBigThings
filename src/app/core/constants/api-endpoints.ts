@@ -79,6 +79,13 @@ class ApiEndpoints {
   public DELETE_SESSION: string = `${this.PATH}/session/delete`
   public GET_SESSION_BY_ID: string = `${this.PATH}/session/get-by-id`
 
+  // Video Management
+  public CREATE_VIDEO: string = `${this.PATH}/video/create`
+  public GET_VIDEOS: string = `${this.PATH}/video/list`
+  public UPDATE_VIDEO: string = `${this.PATH}/video/update`
+  public DELETE_VIDEO: string = `${this.PATH}/video/delete`
+  public GET_VIDEO_BY_ID: string = `${this.PATH}/video/get-by-id`
+
   public CREATE_CITY: string = `${this.PATH}/createCity`
   public GET_ALL_CITIES: string = `${this.PATH}/getCities`
   public GET_CITY_BY_ID: string = `${this.PATH}/getCityById`

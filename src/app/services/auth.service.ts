@@ -1534,6 +1534,31 @@ export class EventService {
     createdAt: string;
     __v: number;
   }
+
+  export interface VideoResponse {
+    docs: Video[];
+    totalDocs: string | number;
+    limit: number;
+    page: number;
+    totalPages: number;
+    pagingCounter: number;
+    hasPrevPage: boolean;
+    hasNextPage: boolean;
+    prevPage: number | null;
+    nextPage: number | null;
+  }
+
+  export interface Video {
+    _id: string;
+    title: string;
+    description?: string;
+    url: string;
+    categoryId: { _id: string; name: string };
+    isPremium: boolean;
+    uploadedBy: string | { _id: string; name: string; email: string };
+    createdAt: string;
+    __v: number;
+  }
   
   @Injectable({
     providedIn: 'root',
@@ -1791,6 +1816,130 @@ export class EventService {
       } catch (error) {
         console.error('Get Session By ID Error:', error);
         swalHelper.showToast('Failed to fetch session details', 'error');
+        throw error;
+      }
+    }
+  }
+
+  @Injectable({
+    providedIn: 'root',
+  })
+  export class VideoService {
+    private headers: any = [];
+    
+    constructor(private apiManager: ApiManager, private storage: AppStorage) {}
+    
+    private getHeaders = () => {
+      this.headers = [];
+      const token = this.storage.get('token');
+      if (token != null) {
+        this.headers.push({ Authorization: `Bearer ${token}` });
+      }
+    };
+
+    async getVideos(data: { page: number; limit: number; search?: string; categoryId?: string | null; isPremium?: boolean | null }): Promise<VideoResponse> {
+      try {
+        this.getHeaders();
+        
+        const response = await this.apiManager.request(
+          {
+            url: apiEndpoints.GET_VIDEOS,
+            method: 'POST',
+          },
+          data,
+          this.headers
+        );
+        
+        return response.data || response;
+      } catch (error) {
+        console.error('Get Videos Error:', error);
+        swalHelper.showToast('Failed to fetch videos', 'error');
+        throw error;
+      }
+    }
+
+    async createVideo(formData: FormData): Promise<any> {
+      try {
+        this.getHeaders();
+        
+        const response = await this.apiManager.request(
+          {
+            url: apiEndpoints.CREATE_VIDEO,
+            method: 'POST',
+          },
+          formData,
+          this.headers
+        );
+        
+        return response;
+      } catch (error) {
+        console.error('Create Video Error:', error);
+        swalHelper.showToast('Failed to create video', 'error');
+        throw error;
+      }
+    }
+
+    async updateVideo(id: string, formData: FormData): Promise<any> {
+      try {
+        this.getHeaders();
+        
+        formData.append('videoId', id);
+        
+        const response = await this.apiManager.request(
+          {
+            url: apiEndpoints.UPDATE_VIDEO,
+            method: 'POST',
+          },
+          formData,
+          this.headers
+        );
+        
+        return response;
+      } catch (error) {
+        console.error('Update Video Error:', error);
+        swalHelper.showToast('Failed to update video', 'error');
+        throw error;
+      }
+    }
+
+    async deleteVideo(id: string): Promise<any> {
+      try {
+        this.getHeaders();
+        
+        const response = await this.apiManager.request(
+          {
+            url: apiEndpoints.DELETE_VIDEO,
+            method: 'POST',
+          },
+          { videoId: id },
+          this.headers
+        );
+        
+        return response;
+      } catch (error) {
+        console.error('Delete Video Error:', error);
+        swalHelper.showToast('Failed to delete video', 'error');
+        throw error;
+      }
+    }
+
+    async getVideoById(id: string): Promise<any> {
+      try {
+        this.getHeaders();
+        
+        const response = await this.apiManager.request(
+          {
+            url: apiEndpoints.GET_VIDEO_BY_ID,
+            method: 'POST',
+          },
+          { id },
+          this.headers
+        );
+        
+        return response;
+      } catch (error) {
+        console.error('Get Video By ID Error:', error);
+        swalHelper.showToast('Failed to fetch video details', 'error');
         throw error;
       }
     }
