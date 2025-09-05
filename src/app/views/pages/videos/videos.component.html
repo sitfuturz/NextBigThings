@@ -97,7 +97,10 @@
               <span *ngIf="!video.categoryId.name" class="text-muted">N/A</span>
             </td>
             <td class="py-3">
-              <span class="badge rounded-pill" [ngClass]="video.isPremium ? 'badge bg-warning' : 'badge bg-success'">
+              <span class="badge rounded-pill clickable-badge" 
+                    [ngClass]="video.isPremium ? 'badge bg-warning' : 'badge bg-success'"
+                    (click)="toggleVideoPremiumStatus(video)"
+                    [title]="'Click to toggle ' + (video.isPremium ? 'Free' : 'Premium') + ' status'">
                 {{video.isPremium ? 'Premium' : 'Free'}}
               </span>
             </td>

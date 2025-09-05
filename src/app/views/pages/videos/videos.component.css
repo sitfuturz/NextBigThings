@@ -315,3 +315,19 @@ ngx-pagination .pagination .page-item .page-link:hover {
 .table td:nth-child(5) {
   min-width: 120px;
 }
+
+/* Clickable badge styling */
+.clickable-badge {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.clickable-badge:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.clickable-badge:active {
+  transform: scale(0.95);
+}

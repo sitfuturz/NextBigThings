@@ -368,6 +368,48 @@ export class VideosComponent implements OnInit, AfterViewInit {
     }
   }
 
+  async toggleVideoPremiumStatus(video: Video): Promise<void> {
+    try {
+      const newPremiumStatus = !video.isPremium;
+      const statusText = newPremiumStatus ? 'Premium' : 'Free';
+      
+      const result = await swalHelper.confirmation(
+        'Toggle Video Status',
+        `Are you sure you want to change this video to ${statusText}?`,
+        'question'
+      );
+      
+      if (result.isConfirmed) {
+        this.loading = true;
+        
+        try {
+          const formData = new FormData();
+          formData.append('title', video.title);
+          formData.append('description', video.description || '');
+          formData.append('categoryId', video.categoryId && typeof video.categoryId === 'object' ? video.categoryId._id : video.categoryId || '');
+          formData.append('isPremium', newPremiumStatus.toString());
+          
+          const response = await this.videoService.updateVideo(video._id, formData);
+          
+          if (response && response.success) {
+            // Update the video object in the local array
+            video.isPremium = newPremiumStatus;
+            swalHelper.showToast(`Video status changed to ${statusText}`, 'success');
+          } else {
+            swalHelper.showToast(response.message || 'Failed to update video status', 'error');
+          }
+        } catch (error) {
+          console.error('Error updating video status:', error);
+          swalHelper.showToast('Failed to update video status', 'error');
+        } finally {
+          this.loading = false;
+        }
+      }
+    } catch (error) {
+      console.error('Confirmation dialog error:', error);
+    }
+  }
+
   // Format date helper function
   formatDate(dateString: string): string {
     if (!dateString) return 'N/A';
