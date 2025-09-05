@@ -36,6 +36,7 @@ export class BatchComponent implements OnInit, AfterViewInit {
   searchQuery: string = '';
   selectedBatch: Batch | null = null;
   batchModal: any;
+  usersModal: any;
   editMode: boolean = false;
   
   newBatch = {
@@ -72,10 +73,18 @@ export class BatchComponent implements OnInit, AfterViewInit {
     // Initialize modal properly with a delay to ensure DOM is fully loaded
     setTimeout(() => {
       const modalElement = document.getElementById('batchModal');
+      const usersModalElement = document.getElementById('usersModal');
+      
       if (modalElement) {
         this.batchModal = new bootstrap.Modal(modalElement);
       } else {
-        console.warn('Modal element not found in the DOM');
+        console.warn('Batch modal element not found in the DOM');
+      }
+      
+      if (usersModalElement) {
+        this.usersModal = new bootstrap.Modal(usersModalElement);
+      } else {
+        console.warn('Users modal element not found in the DOM');
       }
     }, 300);
   }
@@ -351,5 +360,39 @@ export class BatchComponent implements OnInit, AfterViewInit {
       default:
         return 'badge bg-light';
     }
+  }
+
+  // Users modal methods
+  openUsersModal(batch: Batch): void {
+    this.selectedBatch = batch;
+    if (this.usersModal) {
+      this.usersModal.show();
+    } else {
+      try {
+        const modalElement = document.getElementById('usersModal');
+        if (modalElement) {
+          const modalInstance = new bootstrap.Modal(modalElement);
+          this.usersModal = modalInstance;
+          modalInstance.show();
+        } else {
+          $('#usersModal').modal('show');
+        }
+      } catch (error) {
+        console.error('Error showing users modal:', error);
+        $('#usersModal').modal('show');
+      }
+    }
+  }
+
+  getUserProgressPercentage(batch: Batch): number {
+    if (!batch.users || !batch.capacity) return 0;
+    return Math.round((batch.users.length / batch.capacity) * 100);
+  }
+
+  getProgressBarClass(batch: Batch): string {
+    const percentage = this.getUserProgressPercentage(batch);
+    if (percentage >= 90) return 'bg-danger';
+    if (percentage >= 70) return 'bg-warning';
+    return 'bg-success';
   }
 }

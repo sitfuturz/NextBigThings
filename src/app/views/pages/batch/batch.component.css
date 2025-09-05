@@ -276,3 +276,21 @@
 .table-responsive::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
 }
+
+/* Clickable user count badge styling */
+.clickable-user-count {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+  color: white !important;
+}
+
+.clickable-user-count:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.clickable-user-count:active {
+  transform: scale(0.95);
+}

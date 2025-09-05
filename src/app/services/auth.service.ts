@@ -5130,13 +5130,19 @@ export class FinanceService {
     }
   }
 
+    export interface BatchUser {
+      _id: string;
+      name: string;
+      mobile_number: string;
+    }
+
     export interface Batch {
       _id: string;
       name: string;
       startDate: string;
       endDate: string;
       capacity: number;
-      users: string[];
+      users: BatchUser[];
       createdBy: string;
       createdAt: string;
       __v: number;
