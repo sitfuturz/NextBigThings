@@ -3,9 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CategoryService, Category, CategoryResponse } from '../../../services/auth.service';
 import { swalHelper } from '../../../core/constants/swal-helper';
-import { debounceTime, Subject } from 'rxjs';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { debounceTime, Subject } from 'rxjs';
 
 declare var $: any;
 declare var bootstrap: any;
@@ -34,21 +34,24 @@ export class CategoriesComponent implements OnInit, AfterViewInit {
   
   loading: boolean = false;
   searchQuery: string = '';
+  selectedStatus: boolean | null = null;
   selectedCategory: Category | null = null;
   categoryModal: any;
   editMode: boolean = false;
   
   newCategory = {
     name: '',
-    status: false
+    description: '',
+    isActive: false
   };
   
   private searchSubject = new Subject<string>();
   
   payload = {
-    search: '',
     page: 1,
-    limit: 10
+    limit: 10,
+    search: '',
+    isActive: null as boolean | null
   };
 
   constructor(
@@ -85,7 +88,8 @@ export class CategoriesComponent implements OnInit, AfterViewInit {
       const requestData = {
         page: this.payload.page,
         limit: this.payload.limit,
-        search: this.payload.search
+        search: this.payload.search,
+        isActive: this.payload.isActive
       };
       
       const response = await this.categoryService.getCategories(requestData);
@@ -104,6 +108,12 @@ export class CategoriesComponent implements OnInit, AfterViewInit {
     this.payload.search = this.searchQuery;
     this.searchSubject.next(this.searchQuery);
   }
+
+  onStatusChange(): void {
+    this.payload.page = 1;
+    this.payload.isActive = this.selectedStatus;
+    this.fetchCategories();
+  }
   
   onChange(): void {
     this.payload.page = 1;
@@ -119,7 +129,8 @@ export class CategoriesComponent implements OnInit, AfterViewInit {
     this.editMode = false;
     this.newCategory = {
       name: '',
-      status: false
+      description: '',
+      isActive: false
     };
     
     this.showModal();
@@ -130,7 +141,8 @@ export class CategoriesComponent implements OnInit, AfterViewInit {
     this.selectedCategory = category;
     this.newCategory = {
       name: category.name,
-      status: category.status
+      description: category.description || '',
+      isActive: category.isActive
     };
     
     this.showModal();
@@ -212,18 +224,18 @@ export class CategoriesComponent implements OnInit, AfterViewInit {
     try {
       this.loading = true;
       
-      const updatedStatus = !category.status;
+      const updatedStatus = !category.isActive;
       
       const response = await this.categoryService.updateCategory(
         category._id,
         { 
           name: category.name, 
-          status: updatedStatus 
+          isActive: updatedStatus 
         }
       );
       
       if (response && response.success) {
-        category.status = updatedStatus;
+        category.isActive = updatedStatus;
         swalHelper.showToast(`Category status changed to ${updatedStatus ? 'Active' : 'Inactive'}`, 'success');
       } else {
         swalHelper.showToast(response.message || 'Failed to update category status', 'error');

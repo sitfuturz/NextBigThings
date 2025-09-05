@@ -1498,7 +1498,8 @@ export class EventService {
   export interface Category {
     _id: string;
     name: string;
-    status: boolean;
+    description?: string;
+    isActive: boolean;
     createdAt: string;
     __v: number;
   }
@@ -1520,22 +1521,16 @@ export class EventService {
       }
     };
   
-    async getCategories(data: { page: number; limit: number; search: string }): Promise<CategoryResponse> {
+    async getCategories(data: { page: number; limit: number; search?: string; isActive?: boolean | null }): Promise<CategoryResponse> {
       try {
         this.getHeaders();
         
-        // Create query parameters
-        let queryParams = `?page=${data.page}&limit=${data.limit}`;
-        if (data.search) {
-          queryParams += `&search=${encodeURIComponent(data.search)}`;
-        }
-        
         const response = await this.apiManager.request(
           {
-            url: apiEndpoints.GET_CATEGORIES + queryParams,
-            method: 'GET',
+            url: apiEndpoints.GET_CATEGORIES,
+            method: 'POST',
           },
-          null,
+          data,
           this.headers
         );
         
@@ -1548,7 +1543,7 @@ export class EventService {
       }
     }
   
-    async createCategory(data: { name: string; status: boolean }): Promise<any> {
+    async createCategory(data: { name: string; description?: string; isActive: boolean }): Promise<any> {
       try {
         this.getHeaders();
         
@@ -1577,16 +1572,21 @@ export class EventService {
       }
     }
   
-    async updateCategory(id: string, data: { name: string; status: boolean }): Promise<any> {
+    async updateCategory(id: string, data: { name: string; description?: string; isActive: boolean }): Promise<any> {
       try {
         this.getHeaders();
         
+        const requestData = {
+          categoryId: id,
+          ...data
+        };
+        
         const response = await this.apiManager.request(
           {
-            url: `${apiEndpoints.UPDATE_CATEGORY}/${id}`,
-            method: 'PUT',
+            url: apiEndpoints.UPDATE_CATEGORY,
+            method: 'POST',
           },
-          data,
+          requestData,
           this.headers
         );
         
@@ -1604,10 +1604,10 @@ export class EventService {
         
         const response = await this.apiManager.request(
           {
-            url: `${apiEndpoints.GET_CATEGORY_BY_ID}/${id}`,
-            method: 'GET',
+            url: apiEndpoints.GET_CATEGORY_BY_ID,
+            method: 'POST',
           },
-          null,
+          { id },
           this.headers
         );
         
@@ -1625,10 +1625,10 @@ export class EventService {
         
         const response = await this.apiManager.request(
           {
-            url: `${apiEndpoints.DELETE_CATEGORY}/${id}`,
-            method: 'DELETE',
+            url: apiEndpoints.DELETE_CATEGORY,
+            method: 'POST',
           },
-          null,
+          { categoryId: id },
           this.headers
         );
         
@@ -3635,20 +3635,21 @@ export class ParticipationService {
       name: string;
       email: string;
       mobile_number: string;
-      chapter_name: string;
-      meeting_role: string;
-      
-        induction_date: string;
-      
-      profilePic: string;
       date_of_birth: string;
-      city: string;
-      state: string;
-      country: string;
-      sponseredBy: string;
-      status: boolean;
-      createdAt: string;
-      keywords: string;
+      profilePic: string;
+      address: string;
+      verified: boolean;
+      verificationCode: string;
+      isActive: boolean;
+      fcm: string;
+      business: any[];
+      city?: string;
+      state?: string;
+      country?: string;
+      deviceId?: string;
+      batchId?: string;
+      createdAt?: string;
+      __v?: number;
     }
     
     @Injectable({
@@ -3688,6 +3689,90 @@ export class ParticipationService {
         } catch (error) {
           console.error('Register User Error:', error);
           swalHelper.showToast('Failed to register user', 'error');
+          throw error;
+        }
+      }
+
+      async createUser(formData: FormData): Promise<any> {
+        try {
+          this.getHeaders();
+          
+          const response = await this.apiManager.request(
+            {
+              url: `${apiEndpoints.CREATE_USER}`,
+              method: 'POST'
+            },
+            formData,
+            this.headers
+          );
+          
+          return response;
+        } catch (error) {
+          console.error('Create User Error:', error);
+          swalHelper.showToast('Failed to create user', 'error');
+          throw error;
+        }
+      }
+
+      async verifyUserAndAssignBatch(userId: string): Promise<any> {
+        try {
+          this.getHeaders();
+          
+          const response = await this.apiManager.request(
+            {
+              url: `${apiEndpoints.VERIFY_USER_AND_ASSIGN_BATCH}`,
+              method: 'POST'
+            },
+            { userId },
+            this.headers
+          );
+          
+          return response;
+        } catch (error) {
+          console.error('Verify User Error:', error);
+          swalHelper.showToast('Failed to verify user', 'error');
+          throw error;
+        }
+      }
+
+      async toggleUserStatus(userId: string): Promise<any> {
+        try {
+          this.getHeaders();
+          
+          const response = await this.apiManager.request(
+            {
+              url: `${apiEndpoints.TOGGLE_USER_STATUS}`,
+              method: 'POST'
+            },
+            { id: userId },
+            this.headers
+          );
+          
+          return response;
+        } catch (error) {
+          console.error('Toggle User Status Error:', error);
+          swalHelper.showToast('Failed to toggle user status', 'error');
+          throw error;
+        }
+      }
+
+      async updateUser(userId: string, userData: any): Promise<any> {
+        try {
+          this.getHeaders();
+          
+          const response = await this.apiManager.request(
+            {
+              url: `${apiEndpoints.UPDATE_USER}/${userId}`,
+              method: 'PUT'
+            },
+            userData,
+            this.headers
+          );
+          
+          return response;
+        } catch (error) {
+          console.error('Update User Error:', error);
+          swalHelper.showToast('Failed to update user', 'error');
           throw error;
         }
       }
@@ -4874,6 +4959,25 @@ export class FinanceService {
               url: apiEndpoints.DELETE_BATCH,
             },
             { batchId },
+            this.headers
+          );
+          
+          return response;
+        } catch (error) {
+          throw error;
+        }
+      }
+
+      async listActiveBatches(data: any = {}): Promise<any> {
+        try {
+          this.getHeaders();
+          
+          const response = await this.apiManager.request(
+            {
+              method: 'POST',
+              url: apiEndpoints.LIST_ACTIVE_BATCHES,
+            },
+            data,
             this.headers
           );
           

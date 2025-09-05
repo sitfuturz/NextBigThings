@@ -2,7 +2,8 @@ import { Component, OnInit, AfterViewInit, ChangeDetectorRef } from '@angular/co
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { RegisterUserAuthService, User } from '../../../services/auth.service';
+import { NgxPaginationModule } from 'ngx-pagination';
+import { RegisterUserAuthService, User, BatchService } from '../../../services/auth.service';
 import { CountryService, Country } from '../../../services/auth.service';
 import { StateService, State } from '../../../services/auth.service';
 import { CityService, City } from '../../../services/auth.service';
@@ -10,7 +11,6 @@ import { ChapterService, Chapter } from '../../../services/auth.service';
 import { AuthService } from '../../../services/auth.service';
 import { DashboardService } from '../../../services/auth.service';
 import { swalHelper } from '../../../core/constants/swal-helper';
-import { debounceTime, Subject } from 'rxjs';
 
 declare var $: any;
 declare var bootstrap: any;
@@ -18,8 +18,8 @@ declare var bootstrap: any;
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgSelectModule],
-  providers: [RegisterUserAuthService, CountryService, StateService, CityService, ChapterService, AuthService, DashboardService],
+  imports: [CommonModule, FormsModule, NgSelectModule, NgxPaginationModule],
+  providers: [RegisterUserAuthService, CountryService, StateService, CityService, ChapterService, AuthService, DashboardService, BatchService],
   templateUrl: './userRegisteration.component.html',
   styleUrls: ['./userRegisteration.component.css']
 })
@@ -28,36 +28,51 @@ export class RegisterComponent implements OnInit, AfterViewInit {
     name: '',
     email: '',
     mobile_number: '',
-    chapter_name: '',
-    meeting_role: '',
     profilePic: null,
     date_of_birth: '',
     city: '',
     state: '',
     country: '',
-    sponseredBy: null,
-    keywords: '',
-    induction_date: ''
+    fcm: '',
+    address: '',
+    deviceId: '',
+    batchId: ''
   };
+
+  isEditMode: boolean = false;
+  currentEditUser: User | null = null;
 
   countries: Country[] = [];
   states: State[] = [];
   cities: City[] = [];
-  chapters: Chapter[] = [];
-  users: User[] = [];
+  batches: any[] = [];
+  users: any = { docs: [], totalDocs: 0 };
   
   loading: boolean = false;
   countriesLoading: boolean = false;
   statesLoading: boolean = false;
   citiesLoading: boolean = false;
-  chaptersLoading: boolean = false;
+  batchesLoading: boolean = false;
   usersLoading: boolean = false;
   
   countriesLoaded: boolean = false;
   statesLoaded: boolean = false;
   citiesLoaded: boolean = false;
-  chaptersLoaded: boolean = false;
+  batchesLoaded: boolean = false;
   usersLoaded: boolean = false;
+
+  // Search and pagination
+  searchQuery: string = '';
+  selectedBatch: string = '';
+  payload: any = {
+    page: 1,
+    limit: 10,
+    search: '',
+    batchId: ''
+  };
+
+  // Math reference for template
+  Math = Math;
 
   // Track which fields have been touched/interacted with
   touchedFields: any = {
@@ -67,8 +82,7 @@ export class RegisterComponent implements OnInit, AfterViewInit {
     country: false,
     state: false,
     city: false,
-    chapter_name: false,
-    induction_date: false
+    batchId: false
   };
 
   // Validation error messages
@@ -79,17 +93,9 @@ export class RegisterComponent implements OnInit, AfterViewInit {
     country: '',
     state: '',
     city: '',
-    chapter_name: '',
-    induction_date: ''
+    batchId: ''
   };
 
-  // Add meetingRoles array to fix the error
-  meetingRoles = [
-    { name: 'Leader', value: 'Leader' },
-    { name: 'Member', value: 'Member' }
-  ];
-
-  private searchSubject = new Subject<string>();
   registerModal: any;
 
   constructor(
@@ -97,20 +103,16 @@ export class RegisterComponent implements OnInit, AfterViewInit {
     private countryService: CountryService,
     private stateService: StateService,
     private cityService: CityService,
-    private chapterService: ChapterService,
-    private authService: AuthService,
-    private dashboardService: DashboardService,
-    private cdr: ChangeDetectorRef
-  ) {
-    this.searchSubject.pipe(debounceTime(500)).subscribe(() => {
-      this.fetchUsers();
-    });
-  }
+    private batchService: BatchService,
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
     this.fetchCountries();
     this.fetchStates();
     this.fetchCities();
+    this.fetchBatches();
     this.fetchUsers();
   }
 
@@ -183,24 +185,21 @@ export class RegisterComponent implements OnInit, AfterViewInit {
     }
   }
 
-  async fetchChaptersByCity(cityName: string): Promise<void> {
-    if (!cityName) {
-      this.chapters = [];
-      return;
-    }
-
-    this.chaptersLoading = true;
-    this.chaptersLoaded = false;
+  async fetchBatches(): Promise<void> {
+    this.batchesLoading = true;
+    this.batchesLoaded = false;
     try {
-      const response = await this.dashboardService.getChaptersByCity(cityName);
-      this.chapters = response.data || response.data || [];
-      this.chaptersLoaded = true;
+      const response = await this.batchService.listActiveBatches({
+        page: 1,
+        limit: 1000
+      });
+      this.batches = response.data?.batches?.docs || [];
+      this.batchesLoaded = true;
     } catch (error) {
-      console.error('Error fetching chapters by city:', error);
-      swalHelper.showToast('Failed to fetch chapters', 'error');
-      this.chapters = [];
+      console.error('Error fetching batches:', error);
+      swalHelper.showToast('Failed to fetch batches', 'error');
     } finally {
-      this.chaptersLoading = false;
+      this.batchesLoading = false;
       this.cdr.detectChanges();
     }
   }
@@ -209,12 +208,8 @@ export class RegisterComponent implements OnInit, AfterViewInit {
     this.usersLoading = true;
     this.usersLoaded = false;
     try {
-      const response = await this.authService.getUsers({
-        page: 1,
-        limit: 1000,
-        search: ''
-      });
-      this.users = response.docs;
+      const response = await this.authService.getUsers(this.payload);
+      this.users = response.data || response;
       this.usersLoaded = true;
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -226,15 +221,201 @@ export class RegisterComponent implements OnInit, AfterViewInit {
   }
 
   onCityChange(): void {
-    this.registerForm.chapter_name = '';
-    this.validationErrors.chapter_name = '';
-    this.touchedFields.chapter_name = false; // Reset touched state for chapter
+    // No longer needed since we removed chapter functionality
+  }
+
+  onSearch(): void {
+    this.payload.search = this.searchQuery;
+    this.payload.page = 1;
+    this.fetchUsers();
+  }
+
+  onBatchChange(): void {
+    this.payload.batchId = this.selectedBatch;
+    this.payload.page = 1;
+    this.fetchUsers();
+  }
+
+  onChange(): void {
+    this.payload.page = 1;
+    this.fetchUsers();
+  }
+
+  onPageChange(page: number): void {
+    this.payload.page = page;
+    this.fetchUsers();
+  }
+
+  viewUserDetails(user: User): void {
+    // TODO: Implement view user details functionality
+    console.log('View user details:', user);
+    swalHelper.showToast('View user details functionality coming soon', 'info');
+  }
+
+  editUser(user: User): void {
+    this.currentEditUser = user;
+    this.isEditMode = true;
     
-    if (this.registerForm.city) {
-      this.fetchChaptersByCity(this.registerForm.city);
-    } else {
-      this.chapters = [];
+    // Populate the registerForm with user data
+    this.registerForm = {
+      name: user.name || '',
+      email: user.email || '',
+      mobile_number: user.mobile_number || '',
+      profilePic: null,
+      date_of_birth: user.date_of_birth || '',
+      city: user.city || '',
+      state: user.state || '',
+      country: user.country || '',
+      fcm: user.fcm || '',
+      address: user.address || '',
+      deviceId: user.deviceId || '',
+      batchId: user.batchId || ''
+    };
+    
+    this.openRegisterModal();
+  }
+
+  openRegisterModal(): void {
+    // Reset to add mode when opening for new user
+    if (!this.isEditMode) {
+      this.resetForm();
     }
+    
+    if (this.registerModal) {
+      this.registerModal.show();
+    }
+  }
+
+  closeModal(): void {
+    if (this.registerModal) {
+      this.registerModal.hide();
+    }
+    // Reset form and mode when closing
+    this.resetForm();
+    this.isEditMode = false;
+    this.currentEditUser = null;
+  }
+
+  async updateUser(): Promise<void> {
+    if (!this.currentEditUser) {
+      swalHelper.showToast('No user selected for editing', 'error');
+      return;
+    }
+
+    try {
+      this.loading = true;
+      
+      const userData = {
+        name: this.registerForm.name,
+        email: this.registerForm.email,
+        mobile_number: this.registerForm.mobile_number,
+        date_of_birth: this.registerForm.date_of_birth,
+        city: this.registerForm.city,
+        state: this.registerForm.state,
+        country: this.registerForm.country,
+        address: this.registerForm.address,
+        batchId: this.registerForm.batchId
+      };
+
+      const response = await this.registerService.updateUser(this.currentEditUser._id, userData);
+      
+      if (response && response.success) {
+        swalHelper.showToast('User updated successfully', 'success');
+        this.closeModal();
+        // Refresh the users list
+        this.fetchUsers();
+      } else {
+        swalHelper.showToast(response.message || 'Failed to update user', 'error');
+      }
+    } catch (error) {
+      console.error('Error updating user:', error);
+      swalHelper.showToast('Failed to update user', 'error');
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  resetForm(): void {
+    this.registerForm = {
+      name: '',
+      email: '',
+      mobile_number: '',
+      profilePic: null,
+      date_of_birth: '',
+      city: '',
+      state: '',
+      country: '',
+      fcm: '',
+      address: '',
+      deviceId: '',
+      batchId: ''
+    };
+
+    // Reset validation errors
+    this.validationErrors = {
+      name: '',
+      email: '',
+      mobile_number: '',
+      country: '',
+      state: '',
+      city: '',
+      batchId: ''
+    };
+
+    // Reset touched fields
+    this.touchedFields = {
+      name: false,
+      email: false,
+      mobile_number: false,
+      country: false,
+      state: false,
+      city: false,
+      batchId: false
+    };
+  }
+
+  async verifyUser(user: User): Promise<void> {
+    try {
+      const response = await this.registerService.verifyUserAndAssignBatch(user._id);
+      if (response && response.success) {
+        swalHelper.showToast('User verified and batch assigned successfully', 'success');
+        // Refresh the users list
+        this.fetchUsers();
+      } else {
+        swalHelper.showToast(response.message || 'Failed to verify user', 'error');
+      }
+    } catch (error) {
+      console.error('Error verifying user:', error);
+      swalHelper.showToast('Failed to verify user', 'error');
+    }
+  }
+
+  toggleUserVerification(user: User): void {
+    if (!user.verified) {
+      this.verifyUser(user);
+    }
+  }
+
+  async toggleUserStatus(user: User): Promise<void> {
+    try {
+      const response = await this.registerService.toggleUserStatus(user._id);
+      if (response && response.success) {
+        swalHelper.showToast(`User status changed to ${response.data ? 'Active' : 'Inactive'}`, 'success');
+        // Refresh the users list
+        this.fetchUsers();
+      } else {
+        swalHelper.showToast(response.message || 'Failed to toggle user status', 'error');
+      }
+    } catch (error) {
+      console.error('Error toggling user status:', error);
+      swalHelper.showToast('Failed to toggle user status', 'error');
+    }
+  }
+
+  deleteUser(userId: string): void {
+    // TODO: Implement delete user functionality
+    console.log('Delete user:', userId);
+    swalHelper.showToast('Delete user functionality coming soon', 'info');
   }
 
   onMobileInput(event: any): void {
@@ -286,8 +467,9 @@ export class RegisterComponent implements OnInit, AfterViewInit {
 
     const email = this.registerForm.email.trim();
     if (!email) {
-      this.validationErrors.email = 'Email is required';
-      return false;
+      // Email is optional, so empty is valid
+      this.validationErrors.email = '';
+      return true;
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
@@ -355,35 +537,16 @@ export class RegisterComponent implements OnInit, AfterViewInit {
     return true;
   }
 
-  validateChapter(): boolean {
-    if (!this.touchedFields.chapter_name) {
+  validateBatch(): boolean {
+    if (!this.touchedFields.batchId) {
       return true;
     }
 
-    if (!this.registerForm.chapter_name) {
-      this.validationErrors.chapter_name = 'Chapter is required';
+    if (!this.registerForm.batchId) {
+      this.validationErrors.batchId = 'Batch is required';
       return false;
     }
-    this.validationErrors.chapter_name = '';
-    return true;
-  }
-
-  validateInductionDate(): boolean {
-    if (!this.touchedFields.induction_date) {
-      return true;
-    }
-
-    const induction_date = this.registerForm.induction_date;
-    if (!induction_date) {
-      this.validationErrors.induction_date = 'Induction date is required';
-      return false;
-    }
-
-    const selectedDate = new Date(induction_date);
-   
-    
-
-    this.validationErrors.induction_date = '';
+    this.validationErrors.batchId = '';
     return true;
   }
 
@@ -411,16 +574,11 @@ export class RegisterComponent implements OnInit, AfterViewInit {
       case 'city':
         this.validateCity();
         break;
-      case 'chapter_name':
-        this.validateChapter();
-        break;
-      case 'induction_date':
-        this.validateInductionDate();
+      case 'batchId':
+        this.validateBatch();
         break;
     }
   }
-
-
 
   onFileChange(event: any): void {
     const file = event.target.files[0];
@@ -442,28 +600,45 @@ export class RegisterComponent implements OnInit, AfterViewInit {
       this.loading = true;
       const formData = new FormData();
       
-     Object.keys(this.registerForm).forEach(key => {
-  if (key === 'profilePic' && this.registerForm[key]) {
-    formData.append(key, this.registerForm[key]);
-  } else if (key === 'induction_date' && this.registerForm[key]) {
-    const formattedDate = new Date(this.registerForm[key]).toISOString().split('T')[0];
-    formData.append(key, formattedDate);
-  } else if (key === 'sponseredBy' && !this.registerForm[key]) {
-    // skip adding sponsor if empty/null
-  } else {
-    formData.append(key, this.registerForm[key]);
-  }
-});
+      // Add required fields
+      formData.append('name', this.registerForm.name);
+      formData.append('mobile_number', this.registerForm.mobile_number);
+      formData.append('city', this.registerForm.city);
+      formData.append('state', this.registerForm.state);
+      formData.append('country', this.registerForm.country);
+      formData.append('batchId', this.registerForm.batchId);
+      
+      // Add optional fields if provided
+      if (this.registerForm.email) {
+        formData.append('email', this.registerForm.email);
+      }
+      if (this.registerForm.date_of_birth) {
+        formData.append('date_of_birth', this.registerForm.date_of_birth);
+      }
+      if (this.registerForm.fcm) {
+        formData.append('fcm', this.registerForm.fcm);
+      }
+      if (this.registerForm.address) {
+        formData.append('address', this.registerForm.address);
+      }
+      if (this.registerForm.deviceId) {
+        formData.append('deviceId', this.registerForm.deviceId);
+      }
+      
+      // Add profile picture if provided
+      if (this.registerForm.profilePic) {
+        formData.append('profilePic', this.registerForm.profilePic);
+      }
 
-
-
-      const response = await this.registerService.registerUser(formData);
+      const response = await this.registerService.createUser(formData);
       console.log('Register response:', response);
       
       if (response && response.success) {
         swalHelper.showToast('User registered successfully', 'success');
         this.closeModal();
         this.resetForm();
+        // Refresh the users list
+        this.fetchUsers();
       } else {
         swalHelper.showToast(response.message || 'Failed to register user', 'error');
       }
@@ -477,20 +652,16 @@ export class RegisterComponent implements OnInit, AfterViewInit {
 
   markAllRequiredFieldsAsTouched(): void {
     this.touchedFields.name = true;
-    this.touchedFields.email = true;
     this.touchedFields.mobile_number = true;
     this.touchedFields.country = true;
     this.touchedFields.state = true;
     this.touchedFields.city = true;
-    this.touchedFields.chapter_name = true;
-    this.touchedFields.induction_date = true;
+    this.touchedFields.batchId = true;
   }
 
   validateFormForSubmission(): boolean {
     const name = this.registerForm.name.trim();
-    const email = this.registerForm.email.trim();
     const mobile = this.registerForm.mobile_number;
-    const induction_date = this.registerForm.induction_date;
     
     let isValid = true;
 
@@ -506,17 +677,6 @@ export class RegisterComponent implements OnInit, AfterViewInit {
       isValid = false;
     } else {
       this.validationErrors.name = '';
-    }
-
-    // Validate email
-    if (!email) {
-      this.validationErrors.email = 'Email is required';
-      isValid = false;
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      this.validationErrors.email = 'Please enter a valid email address';
-      isValid = false;
-    } else {
-      this.validationErrors.email = '';
     }
 
     // Validate mobile
@@ -554,121 +714,26 @@ export class RegisterComponent implements OnInit, AfterViewInit {
       this.validationErrors.city = '';
     }
 
-    // Validate chapter
-    if (!this.registerForm.chapter_name) {
-      this.validationErrors.chapter_name = 'Chapter is required';
+    // Validate batch
+    if (!this.registerForm.batchId) {
+      this.validationErrors.batchId = 'Batch is required';
       isValid = false;
     } else {
-      this.validationErrors.chapter_name = '';
+      this.validationErrors.batchId = '';
     }
 
-    // Validate induction date
-    if (!induction_date) {
-      this.validationErrors.induction_date = 'Induction date is required';
-      isValid = false;
-    } else {
-      const selectedDate = new Date(induction_date);
-      const today = new Date();
-      if (selectedDate > today) {
-        this.validationErrors.induction_date = 'Induction date cannot be in the future';
-        isValid = false;
-      } else {
-        this.validationErrors.induction_date = '';
-      }
-    }
-
-    return isValid && this.registerForm.meeting_role;
+    return isValid;
   }
 
   validateForm(): boolean {
     const name = this.registerForm.name.trim();
-    const email = this.registerForm.email.trim();
     const mobile = this.registerForm.mobile_number;
-    const induction_date = this.registerForm.induction_date;
 
     return name && name.length >= 2 && /^[a-zA-Z\s]+$/.test(name) &&
-           email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
            mobile && /^\d{10}$/.test(mobile) &&
            this.registerForm.country &&
            this.registerForm.state &&
            this.registerForm.city &&
-           this.registerForm.chapter_name &&
-           this.registerForm.meeting_role &&
-           induction_date && new Date(induction_date) <= new Date();
-  }
-
-  resetForm(): void {
-    this.registerForm = {
-      name: '',
-      email: '',
-      mobile_number: '',
-      chapter_name: '',
-      meeting_role: '',
-      profilePic: null,
-      date_of_birth: '',
-      city: '',
-      state: '',
-      country: '',
-      sponseredBy:null,
-      keywords: '',
-      induction_date: ''
-    };
-
-    // Reset validation errors
-    this.validationErrors = {
-      name: '',
-      email: '',
-      mobile_number: '',
-      country: '',
-      state: '',
-      city: '',
-      chapter_name: '',
-      induction_date: ''
-    };
-
-    // Reset touched fields
-    this.touchedFields = {
-      name: false,
-      email: false,
-      mobile_number: false,
-      country: false,
-      state: false,
-      city: false,
-      chapter_name: false,
-      induction_date: false
-    };
-
-    this.chapters = [];
-  }
-
-  showModal(): void {
-    this.cdr.detectChanges();
-    if (this.registerModal) {
-      this.registerModal.show();
-    } else {
-      $('#registerModal').modal('show');
-    }
-  }
-
-  closeModal(): void {
-    if (this.registerModal) {
-      this.registerModal.hide();
-    } else {
-      $('#registerModal').modal('hide');
-    }
-  }
-
-  openRegisterModal(): void {
-    this.resetForm();
-    setTimeout(() => {
-      this.showModal();
-    }, 100);
-  }
-
-  formatDate(dateString: string): string {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString();
+           this.registerForm.batchId;
   }
 }
-
-

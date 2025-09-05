@@ -1,26 +1,161 @@
 <div class="container-fluid">
   <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-    <div class="card-header bg-gradient-primary d-flex justify-content-between align-items-center py-3">
+    <div class="card-header bg-primary d-flex justify-content-between align-items-center py-3">
       <h4 class="mb-0 fw-bold text-white">
-        <i class="bi bi-person-plus me-2"></i>User Registration
+        <i class="bi bi-people-fill me-2"></i>All Members
       </h4>
       <button class="btn btn-light rounded-pill px-4" (click)="openRegisterModal()">
         <i class="bi bi-plus-circle me-2"></i>Register New User
       </button>
     </div>
-    <div class="card-body p-4">
-      <div *ngIf="loading" class="text-center my-5 py-5">
-        <div class="spinner-grow text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
+    <div class="card-body p-0">
+      <div class="d-flex flex-wrap justify-content-between align-items-center p-3 border-bottom">
+        <div class="flex-grow-1 me-2">
+          <input type="text" class="form-control" placeholder="Search..." [(ngModel)]="searchQuery" (input)="onSearch()">
+        </div>
+        <div class="me-2">
+          <ng-select
+            id="batchSelect"
+            [items]="batches"
+            bindLabel="name"
+            bindValue="_id"
+            [(ngModel)]="selectedBatch"
+            (change)="onBatchChange()"
+            placeholder="Select Batch"
+            [clearable]="true">
+          </ng-select>
+        </div>
+        <div class="ms-2">
+          <ng-select
+            id="limitSelect"
+            [items]="[10, 25, 50, 100]"
+            [(ngModel)]="payload.limit"
+            (change)="onChange()"
+            placeholder="Items per page">
+          </ng-select>
         </div>
       </div>
-      <div *ngIf="!loading" class="text-center my-5 py-4 px-4">
-        <div class="empty-state">
-          <i class="bi bi-person-plus fs-1 text-muted mb-3"></i>
-          <h5>Register New User</h5>
-          <p class="text-muted">Click the button above to register a new user through the admin panel.</p>
-        </div>
+    </div>
+
+    <div *ngIf="loading" class="text-center my-5 py-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
       </div>
+    </div>
+
+    <div class="table-responsive" *ngIf="!loading && users?.docs?.length > 0">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="bg-light">
+          <tr>
+            <th class="ps-4 py-3">Name</th>
+            <th class="py-3">Mobile</th>
+            <th class="py-3">Email</th>
+            <th class="py-3">Date of Birth</th>
+            <th class="py-3">Address</th>
+            <th class="py-3">Status</th>
+            <th class="py-3">Verified</th>
+            <th class="text-end pe-4 py-3">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of users?.docs | paginate: { itemsPerPage: payload.limit, currentPage: payload.page, totalItems: users?.totalDocs }; let i=index" class="border-bottom">
+            <td class="ps-4 py-3">
+              <div class="d-flex align-items-center">
+                <div class="bg-gradient-primary rounded-circle me-3 d-flex align-items-center justify-content-center shadow-sm border-2 border-white"
+                  style="width: 40px; height: 40px; color: white;">
+                  {{user.name ? user.name.charAt(0).toUpperCase() : 'U'}}
+                </div>
+                <div>
+                  <div class="fw-bold text-dark">{{user.name || 'Unknown User'}}</div>
+                  <small class="text-muted d-block">ID: {{user._id ? user._id.substring(0, 8) : 'N/A'}}</small>
+                </div>
+              </div>
+            </td>
+            <td class="py-3">
+              <span class="d-flex align-items-center">
+                <i class="bi bi-telephone-fill text-muted me-2"></i>
+                {{user.mobile_number || 'N/A'}}
+              </span>
+            </td>
+            <td class="py-3">
+              <span *ngIf="user.email" class="text-primary">{{user.email}}</span>
+              <span *ngIf="!user.email" class="text-muted">N/A</span>
+            </td>
+            <td class="py-3">
+              <span *ngIf="user.date_of_birth">{{user.date_of_birth | date:'dd/MM/yyyy'}}</span>
+              <span *ngIf="!user.date_of_birth" class="text-muted">N/A</span>
+            </td>
+            <td class="py-3">
+              <span *ngIf="user.address" class="text-truncate d-inline-block" style="max-width: 150px;" [title]="user.address">
+                {{user.address}}
+              </span>
+              <span *ngIf="!user.address" class="text-muted">N/A</span>
+            </td>
+            <td class="py-3">
+              <span class="badge rounded-pill" 
+                    [class.bg-success]="user.isActive" 
+                    [class.bg-danger]="!user.isActive"
+                    style="cursor: pointer;"
+                    (click)="toggleUserStatus(user)">
+                {{user.isActive ? 'Active' : 'Inactive'}}
+              </span>
+            </td>
+            <td class="py-3">
+              <span class="badge rounded-pill" 
+                    [class.bg-success]="user.verified" 
+                    [class.bg-warning]="!user.verified"
+                    style="cursor: pointer;"
+                    (click)="toggleUserVerification(user)">
+                {{user.verified ? 'Verified' : 'Unverified'}}
+              </span>
+            </td>
+            <td class="text-end pe-4 py-3">
+              <div class="dropdown">
+                <button class="btn btn-sm btn-outline-primary rounded-pill dropdown-toggle" type="button"
+                  data-bs-toggle="dropdown" aria-expanded="false">
+                  Actions
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                  <li><a class="dropdown-item" (click)="viewUserDetails(user)" style="cursor: pointer;">
+                    <i class="bi bi-eye-fill me-2 text-primary"></i> View Details
+                  </a></li>
+                  <li><a class="dropdown-item" (click)="editUser(user)" style="cursor: pointer;">
+                    <i class="bi bi-pencil-fill me-2 text-warning"></i> Edit
+                  </a></li>
+                  <li><a class="dropdown-item text-danger" (click)="deleteUser(user._id)" style="cursor: pointer;">
+                    <i class="bi bi-trash-fill me-2"></i> Delete
+                  </a></li>
+                </ul>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && (!users?.docs || users.docs.length === 0)" class="text-center my-5 py-4 px-4">
+      <div class="empty-state">
+        <i class="bi bi-people fs-1 text-muted mb-3"></i>
+        <h5>No Members Found</h5>
+        <p class="text-muted">No members have been registered yet. Click the button above to register a new member.</p>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="!loading && users?.docs?.length > 0" class="d-flex justify-content-between align-items-center p-3 border-top">
+      <div class="text-muted">
+        Showing {{((payload.page - 1) * payload.limit) + 1}} to {{Math.min(payload.page * payload.limit, users.totalDocs)}} of {{users.totalDocs}} entries
+      </div>
+      <pagination-controls 
+        (pageChange)="onPageChange($event)"
+        [maxSize]="5"
+        [directionLinks]="true"
+        [autoHide]="true"
+        [responsive]="true"
+        previousLabel="Previous"
+        nextLabel="Next">
+      </pagination-controls>
     </div>
   </div>
 </div>
@@ -32,7 +167,9 @@
     <div class="modal-content border-0 shadow rounded-4 overflow-hidden">
       <div class="modal-header bg-light">
         <h5 class="modal-title" id="registerModalTitle">
-          <i class="bi bi-person-plus me-2"></i>Register New User
+          <i class="bi bi-person-plus me-2" *ngIf="!isEditMode"></i>
+          <i class="bi bi-pencil-square me-2" *ngIf="isEditMode"></i>
+          {{ isEditMode ? 'Edit User' : 'Register New User' }}
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
@@ -56,7 +193,7 @@
               </div>
             </div>
             <div class="col-md-6 mb-3">
-              <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+              <label for="email" class="form-label">Email</label>
               <input 
                 type="email" 
                 class="form-control" 
@@ -64,7 +201,6 @@
                 placeholder="Enter email"
                 [(ngModel)]="registerForm.email" 
                 name="email" 
-                required
                 (blur)="onFieldBlur('email')"
                 [class.is-invalid]="validationErrors.email">
               <div class="invalid-feedback" *ngIf="validationErrors.email">
@@ -94,27 +230,23 @@
               <small class="text-muted">Numbers only, exactly 10 digits</small>
             </div>
             <div class="col-md-6 mb-3">
-              <label for="meeting_role" class="form-label">Meeting Role <span class="text-danger">*</span></label>
-              <ng-select
-                id="meeting_role"
-                [items]="meetingRoles"
-                bindLabel="name"
-                bindValue="value"
-                placeholder="Select meeting role"
-                [(ngModel)]="registerForm.meeting_role"
-                name="meeting_role"
-                required>
-              </ng-select>
+              <label for="profilePic" class="form-label">Profile Picture</label>
+              <input type="file" class="form-control" id="profilePic" (change)="onFileChange($event)"
+                accept="image/*" name="profilePic">
+              <small class="text-muted">Optional: Upload an image file</small>
             </div>
           </div>
       
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label for="keywords" class="form-label">Keywords</label>
-              <input type="text" class="form-control" id="keywords" placeholder="Enter keywords"
-                [(ngModel)]="registerForm.keywords" name="keywords">
+              <label for="date_of_birth" class="form-label">Date of Birth</label>
+              <input 
+                type="date" 
+                class="form-control" 
+                id="date_of_birth" 
+                [(ngModel)]="registerForm.date_of_birth" 
+                name="date_of_birth">
             </div>
-          
             <div class="col-md-6 mb-3">
               <label for="country" class="form-label">Country <span class="text-danger">*</span></label>
               <ng-select
@@ -170,7 +302,6 @@
                 name="city"
                 required
                 [loading]="citiesLoading"
-                (change)="onCityChange()"
                 (blur)="onFieldBlur('city')"
                 [class.is-invalid]="validationErrors.city">
               </ng-select>
@@ -183,29 +314,46 @@
 
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label for="chapter_name" class="form-label">Chapter <span class="text-danger">*</span></label>
+              <label for="fcm" class="form-label">FCM Token</label>
+              <input type="text" class="form-control" id="fcm" placeholder="Enter FCM token"
+                [(ngModel)]="registerForm.fcm" name="fcm">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="deviceId" class="form-label">Device ID</label>
+              <input type="text" class="form-control" id="deviceId" placeholder="Enter device ID"
+                [(ngModel)]="registerForm.deviceId" name="deviceId">
+            </div>
+          </div>
+
+          <!-- <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="profilePic" class="form-label">Profile Picture</label>
+              <input type="file" class="form-control" id="profilePic" (change)="onFileChange($event)"
+                accept="image/*" name="profilePic">
+              <small class="text-muted">Optional: Upload an image file</small>
+            </div>
+          </div> -->
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="batchId" class="form-label">Batch <span class="text-danger">*</span></label>
               <ng-select
-                id="chapter_name"
-                [items]="chapters"
+                id="batchId"
+                [items]="batches"
                 bindLabel="name"
-                bindValue="name"
-                placeholder="Select city first to load chapters"
-                [(ngModel)]="registerForm.chapter_name"
-                name="chapter_name"
+                bindValue="_id"
+                placeholder="Select batch"
+                [(ngModel)]="registerForm.batchId"
+                name="batchId"
                 required
-                [loading]="chaptersLoading"
-                [disabled]="!registerForm.city"
-                (blur)="onFieldBlur('chapter_name')"
-                [class.is-invalid]="validationErrors.chapter_name">
+                [loading]="batchesLoading"
+                (blur)="onFieldBlur('batchId')"
+                [class.is-invalid]="validationErrors.batchId">
               </ng-select>
-              <div class="invalid-feedback" *ngIf="validationErrors.chapter_name">
-                {{ validationErrors.chapter_name }}
+              <div class="invalid-feedback" *ngIf="validationErrors.batchId">
+                {{ validationErrors.batchId }}
               </div>
-              <div *ngIf="chaptersLoading" class="text-muted mt-1 small">Loading chapters...</div>
-              <div *ngIf="!registerForm.city" class="text-muted mt-1 small">Please select a city first</div>
-              <div *ngIf="registerForm.city && chapters.length === 0 && !chaptersLoading" class="text-warning mt-1 small">
-                No chapters available for selected city
-              </div>
+              <div *ngIf="batchesLoading" class="text-muted mt-1 small">Loading batches...</div>
             </div>
             <div class="col-md-6 mb-3">
               <label for="profilePic" class="form-label">Profile Picture</label>
@@ -215,39 +363,10 @@
             </div>
           </div>
 
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label for="induction_date" class="form-label">Induction Date <span class="text-danger">*</span></label>
-              <input 
-                type="date" 
-                class="form-control" 
-                id="induction_date" 
-                [(ngModel)]="registerForm.induction_date" 
-                name="induction_date" 
-                required
-                (blur)="onFieldBlur('induction_date')"
-                [class.is-invalid]="validationErrors.induction_date">
-              <div class="invalid-feedback" *ngIf="validationErrors.induction_date">
-                {{ validationErrors.induction_date }}
-              </div>
-            </div>
-          </div>
-
           <div class="mb-3">
-            <label for="sponseredBy" class="form-label">Sponsored By</label>
-            <ng-select
-              id="sponseredBy"
-              [items]="users"
-              bindLabel="name"
-              bindValue="_id"
-              placeholder="Search and select sponsor"
-              [(ngModel)]="registerForm.sponseredBy"
-              name="sponseredBy"
-              [loading]="usersLoading"
-              [searchable]="true">
-            </ng-select>
-            <div *ngIf="usersLoading" class="text-muted mt-1 small">Loading sponsors...</div>
-            <small class="text-muted">Optional: Select a sponsor</small>
+            <label for="address" class="form-label">Address</label>
+            <textarea class="form-control" id="address" placeholder="Enter address"
+              [(ngModel)]="registerForm.address" name="address" rows="3"></textarea>
           </div>
         </form>
       </div>
@@ -258,11 +377,11 @@
         <button 
           type="button"  
           class="btn btn-primary rounded-pill" 
-          (click)="registerUser()"
-          [disabled]="loading || !validateForm()">
+          (click)="isEditMode ? updateUser() : registerUser()"
+          [disabled]="loading || (!isEditMode && !validateForm())">
           <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" role="status"></span>
           <i *ngIf="!loading" class="bi bi-save me-1"></i>
-          {{ loading ? 'Registering...' : 'Register' }}
+          {{ loading ? (isEditMode ? 'Updating...' : 'Registering...') : (isEditMode ? 'Update User' : 'Register') }}
         </button>
       </div>
     </div>
