@@ -169,6 +169,13 @@ public BULK_DELETE_SLOTS=`${this.PATH}/bulkDeleteSlots`
     public DELETE_EXPENSE= `${this.PATH}/delete-expense`
     public GET_EXPENSE_BY_ID= `${this.PATH}/getExpenseById`
     public GET_CHAPTER_FINANCE_SUMMARY= `${this.PATH}/getChapterFinanceSummary`
+
+    // Batch Management
+    public CREATE_BATCH: string = `${this.PATH}/createBatch`;
+    public GET_BATCHES: string = `${this.PATH}/getbatches`;
+    public GET_BATCH_BY_ID: string = `${this.PATH}/getBatchById`;
+    public UPDATE_BATCH: string = `${this.PATH}/updateBatch`;
+    public DELETE_BATCH: string = `${this.PATH}/deleteBatch`;
   };
   
 

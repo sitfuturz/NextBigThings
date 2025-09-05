@@ -115,6 +115,11 @@ export class SideBarService {
               icon: 'tag',
             },
             {
+              title: 'Batches',
+              link: 'batch',
+              icon: 'collection',
+            },
+            {
               title: 'Sub Categories',
               link: 'subcategory',
               icon: 'list',

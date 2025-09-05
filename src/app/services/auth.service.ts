@@ -4739,6 +4739,151 @@ export class FinanceService {
     }
   }
 
+    export interface Batch {
+      _id: string;
+      name: string;
+      startDate: string;
+      endDate: string;
+      capacity: number;
+      users: string[];
+      createdBy: string;
+      createdAt: string;
+      __v: number;
+    }
+
+    export interface BatchResponse {
+      docs: Batch[];
+      totalDocs: number;
+      limit: number;
+      page: number;
+      totalPages: number;
+      pagingCounter: number;
+      hasPrevPage: boolean;
+      hasNextPage: boolean;
+      prevPage: number | null;
+      nextPage: number | null;
+    }
+
+    @Injectable({
+      providedIn: 'root',
+    })
+    export class BatchService {
+      private headers: any = [];
+      
+      constructor(private apiManager: ApiManager, private storage: AppStorage) {}
+      
+      private getHeaders = () => {
+        this.headers = [];
+        let token = this.storage.get(common.TOKEN);
+        
+        if (token != null) {
+          this.headers.push({ 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          });
+        } else {
+          this.headers.push({
+            'Content-Type': 'application/json'
+          });
+        }
+      };
+
+      async createBatch(data: any): Promise<any> {
+        try {
+          this.getHeaders();
+          
+          const response = await this.apiManager.request(
+            {
+              method: 'POST',
+              url: apiEndpoints.CREATE_BATCH,
+            },
+            data,
+            this.headers
+          );
+          
+          return response;
+        } catch (error) {
+          throw error;
+        }
+      }
+
+      async getBatches(data: any): Promise<BatchResponse> {
+        try {
+          this.getHeaders();
+          
+          const response = await this.apiManager.request(
+            {
+              method: 'POST',
+              url: apiEndpoints.GET_BATCHES,
+            },
+            data,
+            this.headers
+          );
+          
+          return response.data;
+        } catch (error) {
+          throw error;
+        }
+      }
+
+      async getBatchById(id: string): Promise<any> {
+        try {
+          this.getHeaders();
+          
+          const response = await this.apiManager.request(
+            {
+              method: 'POST',
+              url: apiEndpoints.GET_BATCH_BY_ID,
+            },
+            { id },
+            this.headers
+          );
+          
+          return response;
+        } catch (error) {
+          throw error;
+        }
+      }
+
+      async updateBatch(data: any): Promise<any> {
+        try {
+          this.getHeaders();
+          
+          const response = await this.apiManager.request(
+            {
+              method: 'POST',
+              url: apiEndpoints.UPDATE_BATCH,
+            },
+            data,
+            this.headers
+          );
+          
+          return response;
+        } catch (error) {
+          throw error;
+        }
+      }
+
+      async deleteBatch(batchId: string): Promise<any> {
+        try {
+          this.getHeaders();
+          
+          const response = await this.apiManager.request(
+            {
+              method: 'POST',
+              url: apiEndpoints.DELETE_BATCH,
+            },
+            { batchId },
+            this.headers
+          );
+          
+          return response;
+        } catch (error) {
+          throw error;
+        }
+      }
+    }
+
     export interface PointsHistory {
       _id: string;
       userId: string;

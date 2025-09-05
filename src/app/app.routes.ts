@@ -20,6 +20,7 @@ import { AttendanceComponent } from './views/pages/attendence/attendence.compone
 
 import { ChaptersComponent } from './views/pages/chapter/chapter.component';
 import { CategoriesComponent } from './views/pages/category/category.component';
+import { BatchComponent } from './views/pages/batch/batch.component';
 import { CitiesComponent } from './views/pages/city/city.component';
 import { LeaderboardComponent } from './views/pages/leaderboard/leaderboard.component';
 import { ReferralsComponent } from './views/pages/referralReport/referralReport.component';
@@ -76,6 +77,7 @@ export const routes: Routes = [
       { path: 'attendence', component: AttendanceComponent, canActivate: [RoleGuard], data: { roles: ['admin', 'advisoryBoard', 'supportDirector', 'supportAmbassador'] } },
       { path: 'chapter', component: ChaptersComponent, canActivate: [RoleGuard], data: { roles: ['admin', 'advisoryBoard', 'supportDirector', 'supportAmbassador'] } },
       { path: 'category', component: CategoriesComponent, canActivate: [RoleGuard], data: { roles: ['admin', 'advisoryBoard', 'supportDirector', 'supportAmbassador'] }, },
+      { path: 'batch', component: BatchComponent, canActivate: [RoleGuard], data: { roles: ['admin', 'advisoryBoard', 'supportDirector', 'supportAmbassador'] }, },
       { path: 'subcategory', component: SubCategoriesComponent, canActivate: [RoleGuard], data: { roles: ['admin', 'advisoryBoard', 'supportDirector', 'supportAmbassador'] }, },
       { path: 'otp', component: OtpRecordsComponent, canActivate: [RoleGuard], data: { roles: ['admin', 'advisoryBoard', 'supportDirector', 'supportAmbassador'] } },
 
