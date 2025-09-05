@@ -137,7 +137,7 @@ export class AnalyticsComponent implements OnInit {
       }
     } catch (error) {
       console.error('Error fetching analytics:', error);
-      swalHelper.showToast('Failed to fetch analytics', 'error');
+      // swalHelper.showToast('Failed to fetch analytics', 'error');
       this.analyticsData = null;
     } finally {
       this.loading = false;
