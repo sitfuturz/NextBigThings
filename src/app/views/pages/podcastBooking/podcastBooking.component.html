@@ -65,7 +65,7 @@
     </div>
 
     <!-- Bookings Table -->
-    <div class="table-responsive" *ngIf="!loading && selectedPodcastId && bookings.docs && bookings.docs.length > 0">
+    <div class="table-responsive" *ngIf="!loading && selectedPodcastId && bookingDocs.length > 0">
       <table class="table table-hover align-middle mb-0">
         <thead class="bg-light">
           <tr>
@@ -79,23 +79,25 @@
         </thead>
         
         <tbody>
-          <tr *ngFor="let booking of bookings.docs | paginate: {itemsPerPage: payload.limit, currentPage: payload.page, totalItems: bookings.totalDocs}; let i=index" 
+          <tr *ngFor="let booking of bookingDocs | paginate: {itemsPerPage: payload.limit, currentPage: currentPage, totalItems: totalBookings}; let i=index" 
               class="border-bottom">
             
             <!-- User Details -->
             <td class="ps-4 py-3">
               <div class="d-flex align-items-center">
-                <div class="d-flex align-items-center mb-2">
-                  <img [src]="booking.userId.profilePic ? imageurl + booking.userId.profilePic : 'assets/images/placeholder-image.png'" 
-                  [alt]="booking.userId.name"   
-                  class="rounded-circle me-3"
-                  style="width: 40px; height: 40px; object-fit: cover;"
-                  onerror="this.src='assets/images/placeholder-image.png'">
-                  <div class="ms-3">
-                    <div class="fw-bold text-dark">{{booking.userId.name}}</div>
-                    <small class="text-muted d-block">{{booking.userId.chapter_name}}</small>
-                    <small class="text-muted">{{booking.userId.mobile_number}}</small>
-                  </div>
+                <img [src]="booking.userId.profilePic ? imageurl + booking.userId.profilePic : 'assets/images/placeholder-image.png'" 
+                     [alt]="booking.userId.name"   
+                     class="rounded-circle me-3"
+                     style="width: 40px; height: 40px; object-fit: cover;"
+                     onerror="this.src='assets/images/placeholder-image.png'">
+                <div>
+                  <div class="fw-bold text-dark">{{booking.userId.name}}</div>
+                  <small class="text-muted d-block" *ngIf="booking.userId.chapter_name">
+                    {{booking.userId.chapter_name}}
+                  </small>
+                  <small class="text-muted" *ngIf="booking.userId.mobile_number">
+                    {{booking.userId.mobile_number}}
+                  </small>
                 </div>
               </div>
             </td>
@@ -163,15 +165,15 @@
       <!-- Pagination Controls -->
       <div class="d-flex justify-content-between align-items-center p-3">
         <div class="text-muted">
-          Showing {{bookings.pagingCounter}} to {{(bookings.page * bookings.limit) > bookings.totalDocs ? bookings.totalDocs : (bookings.page * bookings.limit)}} 
-          of {{bookings.totalDocs}} bookings
+          Showing {{pagingCounter}} to {{(currentPage * payload.limit) > totalBookings ? totalBookings : (currentPage * payload.limit)}} 
+          of {{totalBookings}} bookings
         </div>
         <pagination-controls (pageChange)="onPageChange($event)"></pagination-controls>
       </div>
     </div>
 
     <!-- No Bookings Found -->
-    <div *ngIf="!loading && selectedPodcastId && (!bookings.docs || bookings.docs.length === 0)" 
+    <div *ngIf="!loading && selectedPodcastId && bookingDocs.length === 0" 
          class="text-center my-5 py-4 px-4">
       <div class="empty-state">
         <i class="bi bi-calendar-x fs-1 text-muted mb-3"></i>
@@ -190,8 +192,8 @@
 </div>
 
 <!-- Booking Status Update Modal -->
-<div class="modal fade" id="bookingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" role="dialog"
-  aria-labelledby="bookingModalTitle" aria-hidden="true">
+<div class="modal fade" id="bookingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" 
+     role="dialog" aria-labelledby="bookingModalTitle" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content border-0 shadow rounded-4 overflow-hidden">
       <div class="modal-header bg-light">
@@ -212,7 +214,9 @@
                  onerror="this.src='assets/images/placeholder-image.png'">
             <div>
               <div class="fw-bold">{{selectedBooking.userId.name}}</div>
-              <small class="text-muted">{{selectedBooking.userId.chapter_name}}</small>
+              <small class="text-muted" *ngIf="selectedBooking.userId.chapter_name">
+                {{selectedBooking.userId.chapter_name}}
+              </small>
             </div>
           </div>
           <div class="text-muted">
@@ -275,3 +279,4 @@
     </div>
   </div>
 </div>
+

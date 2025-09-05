@@ -2,12 +2,11 @@ import { Component, OnInit, AfterViewInit, ChangeDetectorRef } from '@angular/co
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { environment } from 'src/env/env.local';
-import { PodcastService, Podcast, PodcastResponse, Slot, SlotResponse } from '../../../services/auth.service';
+import { PodcastSlotsBookingService, Podcast, PodcastResponse, Slot, SlotResponse } from '../../../services/podcast.service';
 import { swalHelper } from '../../../core/constants/swal-helper';
 import { debounceTime, Subject } from 'rxjs';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { BsDatepickerModule, BsDaterangepickerDirective } from 'ngx-bootstrap/datepicker';
 
 declare var bootstrap: any;
 declare var $: any;
@@ -15,13 +14,22 @@ declare var $: any;
 @Component({
   selector: 'app-podcasts',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgxPaginationModule, NgSelectModule, BsDatepickerModule],
-  providers: [PodcastService],
+  imports: [CommonModule, FormsModule, NgxPaginationModule, NgSelectModule],
+  providers: [PodcastSlotsBookingService],
   templateUrl: './podcast.component.html',
   styleUrls: ['./podcast.component.css'],
 })
 export class PodcastsComponent implements OnInit, AfterViewInit {
-  podcasts: PodcastResponse = { podcasts: [], total: 0, limit: 10, page: 1, totalPages: 1 };
+  podcasts: PodcastResponse = { 
+    podcasts: [], 
+    total: 0, 
+    limit: 10, 
+    page: 1, 
+    totalPages: 1,
+    hasNextPage: false,
+    hasPrevPage: false
+  };
+  
   loading: boolean = false;
   searchQuery: string = '';
   selectedPodcast: Podcast | null = null;
@@ -50,15 +58,15 @@ export class PodcastsComponent implements OnInit, AfterViewInit {
   Math = Math;
 
   newPodcast: Podcast = {
+    _id: '',
     podcasterName: '',
     podcasterImage: '',
     aboutPodcaster: '',
     venue: '',
     startDate: '',
     endDate: '',
-    isActive: true,
     status: 'upcoming',
-    _id: '',
+    isActive: true,
     createdAt: '',
     updatedAt: '',
     __v: 0
@@ -86,7 +94,7 @@ export class PodcastsComponent implements OnInit, AfterViewInit {
   };
 
   constructor(
-    private podcastService: PodcastService,
+    private podcastService: PodcastSlotsBookingService,
     private cdr: ChangeDetectorRef
   ) {
     this.searchSubject.pipe(debounceTime(500)).subscribe(() => {
@@ -100,26 +108,31 @@ export class PodcastsComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     setTimeout(() => {
-      const modalElement = document.getElementById('podcastModal');
-      if (modalElement) {
-        this.podcastModal = new bootstrap.Modal(modalElement);
-      }
-
-      const imagePreviewModalElement = document.getElementById('imagePreviewModal');
-      if (imagePreviewModalElement) {
-        this.imagePreviewModal = new bootstrap.Modal(imagePreviewModalElement);
-      }
-
-      const slotModalElement = document.getElementById('slotModal'); 
-      if (slotModalElement) {
-        this.slotModal = new bootstrap.Modal(slotModalElement);
-      }
-
-      const viewSlotsModalElement = document.getElementById('viewSlotsModal');
-      if (viewSlotsModalElement) {
-        this.viewSlotsModal = new bootstrap.Modal(viewSlotsModalElement);
-      }
+      this.initializeModals();
     }, 300);
+  }
+
+  private initializeModals(): void {
+    const modalIds = ['podcastModal', 'imagePreviewModal', 'slotModal', 'viewSlotsModal'];
+    modalIds.forEach(modalId => {
+      const modalElement = document.getElementById(modalId);
+      if (modalElement) {
+        switch (modalId) {
+          case 'podcastModal':
+            this.podcastModal = new bootstrap.Modal(modalElement);
+            break;
+          case 'imagePreviewModal':
+            this.imagePreviewModal = new bootstrap.Modal(modalElement);
+            break;
+          case 'slotModal':
+            this.slotModal = new bootstrap.Modal(modalElement);
+            break;
+          case 'viewSlotsModal':
+            this.viewSlotsModal = new bootstrap.Modal(modalElement);
+            break;
+        }
+      }
+    });
   }
 
   async fetchPodcasts(): Promise<void> {
@@ -130,7 +143,7 @@ export class PodcastsComponent implements OnInit, AfterViewInit {
         limit: this.payload.limit,
         search: this.payload.search
       };
-      const response = await this.podcastService.getPodcasts(requestData);
+      const response = await this.podcastService.getAllPodcasts(requestData);
       this.podcasts = response.data || response;
       this.cdr.detectChanges();
     } catch (error) {
@@ -233,15 +246,15 @@ export class PodcastsComponent implements OnInit, AfterViewInit {
 
   resetForm(): void {
     this.newPodcast = {
+      _id: '',
       podcasterName: '',
       podcasterImage: '',
       aboutPodcaster: '',
       venue: '',
       startDate: '',
       endDate: '',
-      isActive: true,
       status: 'upcoming',
-      _id: '',
+      isActive: true,
       createdAt: '',
       updatedAt: '',
       __v: 0
@@ -265,19 +278,7 @@ export class PodcastsComponent implements OnInit, AfterViewInit {
     if (this.podcastModal) {
       this.podcastModal.show();
     } else {
-      try {
-        const modalElement = document.getElementById('podcastModal');
-        if (modalElement) {
-          const modalInstance = new bootstrap.Modal(modalElement);
-          this.podcastModal = modalInstance;
-          modalInstance.show();
-        } else {
-          $('#podcastModal').modal('show');
-        }
-      } catch (error) {
-        console.error('Error showing modal:', error);
-        $('#podcastModal').modal('show');
-      }
+      $('#podcastModal').modal('show');
     }
   }
 
@@ -286,19 +287,7 @@ export class PodcastsComponent implements OnInit, AfterViewInit {
     if (this.slotModal) {
       this.slotModal.show();
     } else {
-      try {
-        const modalElement = document.getElementById('slotModal');
-        if (modalElement) {
-          const modalInstance = new bootstrap.Modal(modalElement);
-          this.slotModal = modalInstance;
-          modalInstance.show();
-        } else {
-          $('#slotModal').modal('show');
-        }
-      } catch (error) {
-        console.error('Error showing slot modal:', error);
-        $('#slotModal').modal('show');
-      }
+      $('#slotModal').modal('show');
     }
   }
 
@@ -307,19 +296,7 @@ export class PodcastsComponent implements OnInit, AfterViewInit {
     if (this.viewSlotsModal) {
       this.viewSlotsModal.show();
     } else {
-      try {
-        const modalElement = document.getElementById('viewSlotsModal');
-        if (modalElement) {
-          const modalInstance = new bootstrap.Modal(modalElement);
-          this.viewSlotsModal = modalInstance;
-          modalInstance.show();
-        } else {
-          $('#viewSlotsModal').modal('show');
-        }
-      } catch (error) {
-        console.error('Error showing view slots modal:', error);
-        $('#viewSlotsModal').modal('show');
-      }
+      $('#viewSlotsModal').modal('show');
     }
   }
 
@@ -328,19 +305,7 @@ export class PodcastsComponent implements OnInit, AfterViewInit {
     if (this.imagePreviewModal) {
       this.imagePreviewModal.show();
     } else {
-      try {
-        const modalElement = document.getElementById('imagePreviewModal');
-        if (modalElement) {
-          const modalInstance = new bootstrap.Modal(modalElement);
-          this.imagePreviewModal = modalInstance;
-          modalInstance.show();
-        } else {
-          $('#imagePreviewModal').modal('show');
-        }
-      } catch (error) {
-        console.error('Error showing image preview modal:', error);
-        $('#imagePreviewModal').modal('show');
-      }
+      $('#imagePreviewModal').modal('show');
     }
   }
 
@@ -370,30 +335,31 @@ export class PodcastsComponent implements OnInit, AfterViewInit {
     this.resetSlotsData();
   }
 
-  // Slots management methods
+  // ==================== SLOTS MANAGEMENT ====================
+
   async fetchSlots(): Promise<void> {
     if (!this.selectedPodcastForSlots) return;
 
     this.slotsLoading = true;
     try {
-      const response = await this.podcastService.getSlotsByPodcastId(
-        this.selectedPodcastForSlots._id,
-        this.slotsPage,
-        this.slotsLimit
-      );
+      const response = await this.podcastService.getAllSlots({
+        podcastId: this.selectedPodcastForSlots._id,
+        page: this.slotsPage,
+        limit: this.slotsLimit
+      });
 
-      if (response && response.success && response.data) {
-        this.slots = response.data.slot.docs || [];
+      if (response && response.data) {
+        this.slots = response.data.slots || [];
         this.slotsPagination = {
-          totalDocs: response.data.slot.totalDocs,
-          limit: response.data.slot.limit,
-          totalPages: response.data.slot.totalPages,
-          page: response.data.slot.page,
-          pagingCounter: response.data.slot.pagingCounter,
-          hasPrevPage: response.data.slot.hasPrevPage,
-          hasNextPage: response.data.slot.hasNextPage,
-          prevPage: response.data.slot.prevPage,
-          nextPage: response.data.slot.nextPage
+          totalDocs: response.data.total,
+          limit: this.slotsLimit,
+          totalPages: Math.ceil(response.data.total / this.slotsLimit),
+          page: this.slotsPage,
+          pagingCounter: (this.slotsPage - 1) * this.slotsLimit + 1,
+          hasPrevPage: this.slotsPage > 1,
+          hasNextPage: this.slotsPage < Math.ceil(response.data.total / this.slotsLimit),
+          prevPage: this.slotsPage > 1 ? this.slotsPage - 1 : null,
+          nextPage: this.slotsPage < Math.ceil(response.data.total / this.slotsLimit) ? this.slotsPage + 1 : null
         };
       }
     } catch (error) {
@@ -426,7 +392,6 @@ export class PodcastsComponent implements OnInit, AfterViewInit {
       this.selectedSlotIds = this.selectedSlotIds.filter(id => id !== slotId);
     }
     
-    // Update select all checkbox state
     this.selectAllSlots = this.slots.length > 0 && this.selectedSlotIds.length === this.slots.length;
   }
 
@@ -450,17 +415,16 @@ export class PodcastsComponent implements OnInit, AfterViewInit {
         this.slotsLoading = true;
         try {
           const response = await this.podcastService.deleteSlot(slotId);
-          if (response && response.success) {
+          if (response && (response.success || response.status === 200)) {
             swalHelper.showToast('Slot deleted successfully', 'success');
             this.fetchSlots();
-            // Remove from selection if selected
             this.selectedSlotIds = this.selectedSlotIds.filter(id => id !== slotId);
           } else {
             swalHelper.showToast(response.message || 'Failed to delete slot', 'error');
           }
         } catch (error: any) {
           console.error('Error deleting slot:', error);
-          swalHelper.showToast(error?.response?.data?.message || 'Failed to delete slot', 'error');
+          swalHelper.showToast('Failed to delete slot', 'error');
         } finally {
           this.slotsLoading = false;
         }
@@ -487,7 +451,7 @@ export class PodcastsComponent implements OnInit, AfterViewInit {
         this.slotsLoading = true;
         try {
           const response = await this.podcastService.bulkDeleteSlots(this.selectedSlotIds);
-          if (response && response.success) {
+          if (response && (response.success || response.status === 200)) {
             swalHelper.showToast(`${this.selectedSlotIds.length} slots deleted successfully`, 'success');
             this.resetSlotsSelection();
             this.fetchSlots();
@@ -496,7 +460,7 @@ export class PodcastsComponent implements OnInit, AfterViewInit {
           }
         } catch (error: any) {
           console.error('Error bulk deleting slots:', error);
-          swalHelper.showToast(error?.response?.data?.message || 'Failed to delete slots', 'error');
+          swalHelper.showToast('Failed to delete slots', 'error');
         } finally {
           this.slotsLoading = false;
         }
@@ -504,94 +468,6 @@ export class PodcastsComponent implements OnInit, AfterViewInit {
     } catch (error) {
       console.error('Confirmation dialog error:', error);
     }
-  }
-
-  async deleteAllSlots(): Promise<void> {
-    if (!this.slotsPagination?.totalDocs) {
-      swalHelper.showToast('No slots to delete', 'info');
-      return;
-    }
-
-    try {
-      const result = await swalHelper.confirmation(
-        'Delete All Slots',
-        `Are you sure you want to delete ALL ${this.slotsPagination.totalDocs} slots for this podcast? This action cannot be undone.`,
-        'warning'
-      );
-
-      if (result.isConfirmed) {
-        this.slotsLoading = true;
-        try {
-          // Get all slot IDs from all pages
-          const allSlotIds: string[] = [];
-          let currentPage = 1;
-          const totalPages = this.slotsPagination.totalPages;
-
-          while (currentPage <= totalPages) {
-            const response = await this.podcastService.getSlotsByPodcastId(
-              this.selectedPodcastForSlots!._id,
-              currentPage,
-              100 // Get more slots per request
-            );
-            
-            if (response?.success && response.data?.slot?.docs) {
-              allSlotIds.push(...response.data.slot.docs.map((slot: Slot) => slot._id));
-            }
-            currentPage++;
-          }
-
-          if (allSlotIds.length > 0) {
-            const response = await this.podcastService.bulkDeleteSlots(allSlotIds);
-            if (response && response.success) {
-              swalHelper.showToast(`All ${allSlotIds.length} slots deleted successfully`, 'success');
-              this.resetSlotsSelection();
-              this.fetchSlots();
-            } else {
-              swalHelper.showToast(response.message || 'Failed to delete all slots', 'error');
-            }
-          }
-        } catch (error: any) {
-          console.error('Error deleting all slots:', error);
-          swalHelper.showToast(error?.response?.data?.message || 'Failed to delete all slots', 'error');
-        } finally {
-          this.slotsLoading = false;
-        }
-      }
-    } catch (error) {
-      console.error('Confirmation dialog error:', error);
-    }
-  }
-
-  // Slot utility methods
-  trackBySlotId(index: number, slot: Slot): string {
-    return slot._id;
-  }
-
-  getSlotStatusText(slot: Slot): string {
-    if (slot.isFull) return 'Full';
-    if (slot.bookedCount > 0) return `${slot.bookedCount}/${slot.capacity}`;
-    return 'Available';
-  }
-
-  getBookingPercentage(slot: Slot): number {
-    return slot.capacity > 0 ? Math.round((slot.bookedCount / slot.capacity) * 100) : 0;
-  }
-
-  formatSlotDate(dateString: string): string {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      month: 'short', 
-      day: 'numeric',
-      year: 'numeric'
-    });
-  }
-
-  onDateSelect(event: any): void {
-    this.slotFormData.dates = event.map((date: string) => {
-      return new Date(date).toISOString().split('T')[0];
-    });
   }
 
   async generateSlots(): Promise<void> {
@@ -600,19 +476,21 @@ export class PodcastsComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    // Generate all dates between startDate and endDate (inclusive)
+    // Generate all dates between startDate and endDate
     const start = new Date(this.slotFormData.startDate);
     const end = new Date(this.slotFormData.endDate);
     if (start > end) {
       swalHelper.showToast('Start date must be before or equal to end date', 'warning');
       return;
     }
+
     const dates: string[] = [];
     let current = new Date(start);
     while (current <= end) {
       dates.push(current.toISOString().split('T')[0]);
       current.setDate(current.getDate() + 1);
     }
+
     if (dates.length === 0) {
       swalHelper.showToast('Please select at least one date', 'warning');
       return;
@@ -644,7 +522,7 @@ export class PodcastsComponent implements OnInit, AfterViewInit {
         capacity: this.slotFormData.capacity
       });
 
-      if (response && response.success) {
+      if (response && (response.success || response.status === 200)) {
         if (response.data.slots.length > 0) {
           swalHelper.showToast(`Successfully generated ${response.data.slots.length} slots`, 'success');
         } else {
@@ -656,11 +534,13 @@ export class PodcastsComponent implements OnInit, AfterViewInit {
       }
     } catch (error: any) {
       console.error('Error generating slots:', error);
-      swalHelper.showToast(error?.error?.message || 'Failed to generate slots', 'error');
+      swalHelper.showToast('Failed to generate slots', 'error');
     } finally {
       this.slotLoading = false;
     }
   }
+
+  // ==================== PODCAST CRUD OPERATIONS ====================
 
   async savePodcast(form: any): Promise<void> {
     this.formSubmitted = true;
@@ -689,46 +569,22 @@ export class PodcastsComponent implements OnInit, AfterViewInit {
 
       this.loading = true;
       const formData = new FormData();
-
-      if (this.editMode && this.selectedPodcast) {
-        if (this.newPodcast.podcasterName !== this.selectedPodcast.podcasterName) {
-          formData.append('podcasterName', this.newPodcast.podcasterName.trim());
-        }
-        if (this.newPodcast.aboutPodcaster !== this.selectedPodcast.aboutPodcaster) {
-          formData.append('aboutPodcaster', this.newPodcast.aboutPodcaster?.trim() || '');
-        }
-        if (this.newPodcast.venue !== this.selectedPodcast.venue) {
-          formData.append('venue', this.newPodcast.venue?.trim() || '');
-        }
-        if (this.newPodcast.startDate !== this.selectedPodcast.startDate) {
-          formData.append('startDate', this.newPodcast.startDate);
-        }
-        if (this.newPodcast.endDate !== this.selectedPodcast.endDate) {
-          formData.append('endDate', this.newPodcast.endDate);
-        }
-        if (this.newPodcast.isActive !== this.selectedPodcast.isActive) {
-          formData.append('isActive', this.newPodcast.isActive.toString());
-        }
-        if (this.selectedFile) {
-          formData.append('image', this.selectedFile);
-        }
-      } else {
-        formData.append('podcasterName', this.newPodcast.podcasterName.trim());
-        formData.append('aboutPodcaster', this.newPodcast.aboutPodcaster?.trim() || '');
-        formData.append('venue', this.newPodcast.venue?.trim() || '');
-        formData.append('startDate', this.newPodcast.startDate);
-        formData.append('endDate', this.newPodcast.endDate);
-        formData.append('isActive', this.newPodcast.isActive.toString());
-        if (this.selectedFile) {
-          formData.append('image', this.selectedFile);
-        }
+      formData.append('podcasterName', this.newPodcast.podcasterName.trim());
+      formData.append('aboutPodcaster', this.newPodcast.aboutPodcaster?.trim() || '');
+      formData.append('venue', this.newPodcast.venue?.trim() || '');
+      formData.append('startDate', this.newPodcast.startDate);
+      formData.append('endDate', this.newPodcast.endDate);
+      formData.append('isActive', this.newPodcast.isActive.toString());
+      
+      if (this.selectedFile) {
+        formData.append('image', this.selectedFile);
       }
 
       const response = this.editMode && this.selectedPodcast
         ? await this.podcastService.updatePodcast(this.selectedPodcast._id, formData)
         : await this.podcastService.createPodcast(formData);
 
-      if (response && response.success && response.data !== false) {
+      if (response && (response.success || response.status === 200)) {
         swalHelper.showToast(`Podcast ${this.editMode ? 'updated' : 'created'} successfully`, 'success');
         this.closeModal();
         this.fetchPodcasts();
@@ -737,7 +593,7 @@ export class PodcastsComponent implements OnInit, AfterViewInit {
       }
     } catch (error: any) {
       console.error('Error saving podcast:', error);
-      swalHelper.showToast(error?.response?.data?.message || error.message || 'Failed to save podcast', 'error');
+      swalHelper.showToast('Failed to save podcast', 'error');
     } finally {
       this.loading = false;
     }
@@ -752,16 +608,16 @@ export class PodcastsComponent implements OnInit, AfterViewInit {
 
       const response = await this.podcastService.updatePodcast(podcast._id, formData);
 
-      if (response && response.success && response.data !== false) {
+      if (response && (response.success || response.status === 200)) {
         podcast.isActive = updatedStatus;
-        podcast.status = updatedStatus ? 'upcoming' : 'inactive';
+        podcast.status = updatedStatus ? 'upcoming' : 'cancelled';
         swalHelper.showToast(`Podcast status changed to ${updatedStatus ? 'Active' : 'Inactive'}`, 'success');
       } else {
         swalHelper.showToast(response.message || 'Failed to update podcast status', 'error');
       }
     } catch (error: any) {
       console.error('Error updating podcast status:', error);
-      swalHelper.showToast(error?.response?.data?.message || 'Failed to update podcast status', 'error');
+      swalHelper.showToast('Failed to update podcast status', 'error');
     } finally {
       this.loading = false;
     }
@@ -779,7 +635,7 @@ export class PodcastsComponent implements OnInit, AfterViewInit {
         this.loading = true;
         try {
           const response = await this.podcastService.deletePodcast(podcastId);
-          if (response && response.success && response.data !== false) {
+          if (response && (response.success || response.status === 200)) {
             swalHelper.showToast('Podcast deleted successfully', 'success');
             this.fetchPodcasts();
           } else {
@@ -787,7 +643,7 @@ export class PodcastsComponent implements OnInit, AfterViewInit {
           }
         } catch (error: any) {
           console.error('Error deleting podcast:', error);
-          swalHelper.showToast(error?.response?.data?.message || 'Failed to delete podcast', 'error');
+          swalHelper.showToast('Failed to delete podcast', 'error');
         } finally {
           this.loading = false;
         }
@@ -795,6 +651,33 @@ export class PodcastsComponent implements OnInit, AfterViewInit {
     } catch (error) {
       console.error('Confirmation dialog error:', error);
     }
+  }
+
+  // ==================== UTILITY METHODS ====================
+
+  trackBySlotId(index: number, slot: Slot): string {
+    return slot._id;
+  }
+
+  getSlotStatusText(slot: Slot): string {
+    if (slot.isFull) return 'Full';
+    if (slot.bookedCount > 0) return `${slot.bookedCount}/${slot.capacity}`;
+    return 'Available';
+  }
+
+  getBookingPercentage(slot: Slot): number {
+    return slot.capacity > 0 ? Math.round((slot.bookedCount / slot.capacity) * 100) : 0;
+  }
+
+  formatSlotDate(dateString: string): string {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'short', 
+      month: 'short', 
+      day: 'numeric',
+      year: 'numeric'
+    });
   }
 
   formatDate(dateString: string): string {

@@ -1,212 +1,191 @@
-/* Custom CSS for Bookings component */
+
 .bg-gradient-primary {
-    background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
-    color: white;
+  background: linear-gradient(45deg, #0d6efd, #6610f2) !important;
+}
+
+.card {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
+}
+
+.table th {
+  background-color: #f8f9fa !important;
+  border-top: none;
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.table td {
+  vertical-align: middle;
+  padding: 1rem 0.75rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(13, 110, 253, 0.05);
+  transition: background-color 0.15s ease-in-out;
+}
+
+.badge {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.5em 0.75em;
+}
+
+.bg-warning {
+  background-color: #ffc107 !important;
+  color: #000 !important;
+}
+
+.bg-success {
+  background-color: #198754 !important;
+}
+
+.bg-danger {
+  background-color: #dc3545 !important;
+}
+
+.bg-secondary {
+  background-color: #6c757d !important;
+}
+
+.btn-outline-primary {
+  border-color: #0d6efd;
+  color: #0d6efd;
+  transition: all 0.15s ease-in-out;
+}
+
+.btn-outline-primary:hover {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.form-control:focus {
+  border-color: #86b7fe;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.modal-content {
+  border: none;
+  border-radius: 1rem !important;
+  overflow: hidden;
+}
+
+.modal-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  padding: 1.5rem;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  border-top: 1px solid #dee2e6;
+  padding: 1.5rem;
+}
+
+.empty-state {
+  padding: 3rem 2rem;
+}
+
+.empty-state i {
+  opacity: 0.6;
+}
+
+.slot-info {
+  line-height: 1.4;
+}
+
+.admin-notes {
+  font-size: 0.875rem;
+}
+
+.form-label {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #495057;
+}
+
+.spinner-grow {
+  width: 3rem;
+  height: 3rem;
+}
+
+.pagination .page-link {
+  color: #6c757d;
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  padding: 0.5rem 0.75rem;
+  margin-left: -1px;
+  line-height: 1.25;
+  border-radius: 0;
+  transition: all 0.15s ease-in-out;
+}
+
+.pagination .page-link:hover {
+  color: #0d6efd;
+  background-color: #e9ecef;
+  border-color: #dee2e6;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+  color: #fff;
+}
+
+.pagination .page-item:first-child .page-link {
+  border-top-left-radius: 0.375rem;
+  border-bottom-left-radius: 0.375rem;
+}
+
+.pagination .page-item:last-child .page-link {
+  border-top-right-radius: 0.375rem;
+  border-bottom-right-radius: 0.375rem;
+}
+
+@media (max-width: 768px) {
+  .table {
+    font-size: 0.875rem;
   }
   
-  .rounded-4 {
-    border-radius: 0.75rem !important;
+  .modal-dialog {
+    margin: 1rem;
   }
   
   .empty-state {
-    padding: 2rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: #6c757d;
+    padding: 2rem 1rem;
   }
   
-  /* Hover effect for table rows */
-  tbody tr:hover {
-    background-color: rgba(0, 0, 0, 0.03);
+  .card-header h4 {
+    font-size: 1.1rem;
   }
-  
-  /* User profile image styling */
-  .user-avatar {
-    border: 2px solid #fff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Slot info styling */
-  .slot-info {
-    min-width: 150px;
-  }
-  
-  .slot-info .fw-semibold {
-    font-size: 0.9rem;
-  }
-  
-  /* Status badges */
-  .badge {
-    font-size: 0.75rem;
-    padding: 0.5rem 1rem;
-    font-weight: 600;
-    transition: all 0.3s ease;
-  }
-  
-  .badge:hover {
-    transform: scale(1.05);
-  }
-  
-  .badge.bg-warning {
-    background-color: #ffc107 !important;
-    color: #000;
-  }
-  
-  .badge.bg-success {
-    background-color: #198754 !important;
-  }
-  
-  .badge.bg-danger {
-    background-color: #dc3545 !important;
-  }
-  
-  .badge.bg-secondary {
-    background-color: #6c757d !important;
-  }
-  
-  /* Admin notes column */
-  .admin-notes {
-    font-size: 0.85rem;
-    line-height: 1.4;
-  }
-  
-  /* Action buttons */
-  .btn-outline-primary {
-    border-color: #4e73df;
-    color: #4e73df;
-    transition: all 0.3s ease;
-  }
-  
-  .btn-outline-primary:hover {
-    background-color: #4e73df;
-    border-color: #4e73df;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(78, 115, 223, 0.3);
-  }
-  
-  /* Modal styling */
-  .modal-content {
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  }
-  
-  .modal-header {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  }
-  
-  .modal-footer {
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
-  }
-  
-  /* Filter section styling */
-  .card-body .border-bottom {
-    background-color: #f8f9fa;
-  }
-  
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
-    .container-fluid {
-      padding-left: 0.5rem;
-      padding-right: 0.5rem;
-    }
-    
-    .table-responsive {
-      font-size: 0.85rem;
-    }
-    
-    .ps-4 {
-      padding-left: 0.5rem !important;
-    }
-    
-    .pe-4 {
-      padding-right: 0.5rem !important;
-    }
-  }
-  
-  /* Loading state */
-  .spinner-grow {
-    width: 3rem;
-    height: 3rem;
-  }
-  
-  /* Pagination styling */
-  .pagination {
-    margin-bottom: 0;
-  }
-  
-  /* Form elements in modal */
-  .modal .form-label {
-    color: #495057;
-    margin-bottom: 0.5rem;
-  }
-  
-  .modal .form-control,
-  .modal .form-select {
-    border-radius: 0.5rem;
-    border: 1px solid #d1d3e2;
-    font-size: 0.9rem;
-  }
-  
-  .modal .form-control:focus,
-  .modal .form-select:focus {
-    border-color: #4e73df;
-    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
-  }
-  
-  /* User info display in modal */
-  .modal .bg-light {
-    background-color: #f8f9fa !important;
-    border: 1px solid #e3e6f0;
-  }
-  
-  /* Table header styling */
-  thead.bg-light th {
-    background-color: #f8f9fa !important;
-    border-bottom: 2px solid #dee2e6;
-    font-weight: 600;
-    color: #5a5c69;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 0.5px;
-  }
-  
-  /* Search input focus */
-  .form-control:focus {
-    border-color: #4e73df;
-    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
-  }
-  
-  /* Custom select dropdown styling */
-  ng-select {
-    min-height: 38px;
-  }
-  
-  ng-select.ng-select-focused .ng-select-container {
-    border-color: #4e73df;
-    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
-  }
-  
-  /* Responsive table adjustments */
-  @media (max-width: 1200px) {
-    .table td, .table th {
-      padding: 0.5rem;
-      font-size: 0.85rem;
-    }
-    
-    .user-avatar {
-      width: 35px !important;
-      height: 35px !important;
-    }
-  }
-  
-  /* Status badge animations */
-  @keyframes statusUpdate {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
-  }
-  
-  .badge.updating {
-    animation: statusUpdate 0.6s ease-in-out;
-  }
+}
+
+.rounded-4 {
+  border-radius: 1rem !important;
+}
+
+.fw-semibold {
+  font-weight: 600 !important;
+}
+
+.text-primary {
+  color: #0d6efd !important;
+}
+
+.border-bottom {
+  border-bottom: 1px solid #dee2e6 !important;
+}
+
+.shadow-lg {
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important;
+}
