@@ -131,36 +131,36 @@ export class SideBarService {
               link: 'referralReport',
               icon: 'corner-up-right',
             },
-            {
-              title: 'Referral Received Report',
-              link: 'referralReportRecieved',
-              icon: 'corner-down-left',
-            },
-            {
-              title: 'Testimonial Report',
-              link: 'testimonialReport',
-              icon: 'message-square',
-            },
-            {
-              title: 'One To One Report',
-              link: 'oneTooneReport',
-              icon: 'user-check',
-            },
-            {
-              title: 'TYFCB Report',
-              link: 'tyfcb',
-              icon: 'trending-up',
-            },
-            {
-              title: 'Visitors Report',
-              link: 'VisitorsReport',
-              icon: 'user',
-            },
-            {
-              title: 'Ask Management',
-              link: 'askManagement',
-              icon: 'question-circle',
-            },
+            // {
+            //   title: 'Referral Received Report',
+            //   link: 'referralReportRecieved',
+            //   icon: 'corner-down-left',
+            // },
+            // {
+            //   title: 'Testimonial Report',
+            //   link: 'testimonialReport',
+            //   icon: 'message-square',
+            // },
+            // {
+            //   title: 'One To One Report',
+            //   link: 'oneTooneReport',
+            //   icon: 'user-check',
+            // },
+            // {
+            //   title: 'TYFCB Report',
+            //   link: 'tyfcb',
+            //   icon: 'trending-up',
+            // },
+            // {
+            //   title: 'Visitors Report',
+            //   link: 'VisitorsReport',
+            //   icon: 'user',
+            // },
+            // {
+            //   title: 'Ask Management',
+            //   link: 'askManagement',
+            //   icon: 'question-circle',
+            // },
             {
               title: 'Points History',
               link: 'pointHistory',
@@ -199,12 +199,12 @@ export class SideBarService {
               icon: 'cog',
             },
             {
-              title: 'Podcasts',
+              title: 'Training',
               link: 'podcasts',
               icon: 'podcast',
             },
             {
-              title: 'Podcast Booking',
+              title: 'Training Booking',
               link: 'podcastBooking',
               icon: 'calendar-check',
             },  
