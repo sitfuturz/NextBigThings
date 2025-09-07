@@ -1,1 +1,348 @@
-<p>webinar works!</p>
+
+<div class="container-fluid">
+  <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+    <div class="card-header bg-gradient-primary d-flex justify-content-between align-items-center py-3">
+      <h4 class="mb-0 fw-bold text-white">
+        <i class="bi bi-camera-video me-2"></i>Webinar Management
+      </h4>
+      <div class="action-buttons">
+        <button class="btn btn-sm btn-success me-2" (click)="openWebinarModal()">
+          <i class="bi bi-plus-circle me-1"></i>Add Webinar
+        </button>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <div class="d-flex flex-wrap justify-content-between align-items-center p-3 border-bottom">
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-2 mb-md-0">
+          <div class="me-2" style="min-width: 200px;">
+            <label for="statusSelect" class="form-label mb-1">Status</label>
+            <select
+              id="statusSelect"
+              class="form-control"
+              [(ngModel)]="filters.status"
+              (change)="onFilterChange()">
+              <option value="">--Select Status--</option>
+              <option value="scheduled">Scheduled</option>
+              <option value="live">Live</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div class="me-2" style="min-width: 200px;">
+            <label for="accessTypeSelect" class="form-label mb-1">Access Type</label>
+            <select
+              id="accessTypeSelect"
+              class="form-control"
+              [(ngModel)]="filters.accessType"
+              (change)="onFilterChange()">
+              <option value="">--Select Access Type--</option>
+              <option value="free">Free</option>
+              <option value="paid">Paid</option>
+            </select>
+          </div>
+          <div class="me-2">
+            <label for="searchInput" class="form-label mb-1">Search</label>
+            <input
+              id="searchInput"
+              type="text"
+              class="form-control"
+              [(ngModel)]="filters.search"
+              (input)="onFilterChange()"
+              placeholder="Search by title or topic">
+          </div>
+          <div class="me-2">
+            <label for="categoryInput" class="form-label mb-1">Category</label>
+            <input
+              id="categoryInput"
+              type="text"
+              class="form-control"
+              [(ngModel)]="filters.category"
+              (input)="onFilterChange()"
+              placeholder="Enter category">
+          </div>
+          <div class="me-2">
+            <label for="startDateInput" class="form-label mb-1">Start Date</label>
+            <input
+              id="startDateInput"
+              type="date"
+              class="form-control"
+              [(ngModel)]="filters.startDate"
+              (change)="onFilterChange()"
+              placeholder="Start Date">
+          </div>
+          <div class="me-2">
+            <label for="endDateInput" class="form-label mb-1">End Date</label>
+            <input
+              id="endDateInput"
+              type="date"
+              class="form-control"
+              [(ngModel)]="filters.endDate"
+              (change)="onFilterChange()"
+              placeholder="End Date">
+          </div>
+          <div class="mt-4">
+            <button class="btn btn-outline-secondary" (click)="resetFilters()">
+              <i class="bi bi-x-circle me-1"></i>Reset
+            </button>
+          </div>
+        </div>
+        <div class="d-flex align-items-center">
+          <div class="ms-2">
+            <select
+              id="limitSelect"
+              class="form-control"
+              [(ngModel)]="filters.limit"
+              (change)="onFilterChange()">
+              <option value="10">10 per page</option>
+              <option value="25">25 per page</option>
+              <option value="50">50 per page</option>
+              <option value="100">100 per page</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add/Edit Webinar Modal -->
+    <div *ngIf="showWebinarModal" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">{{ editMode ? 'Edit Webinar' : 'Add New Webinar' }}</h5>
+            <button type="button" class="btn-close" (click)="closeWebinarModal()" [disabled]="modalLoading"></button>
+          </div>
+          <div class="modal-body">
+            <form [formGroup]="webinarForm">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Title <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" formControlName="title" placeholder="Enter webinar title">
+                  <div *ngIf="webinarForm.get('title')?.touched && webinarForm.get('title')?.invalid" class="invalid-feedback">
+                    {{ webinarForm.get('title')?.hasError('required') ? 'Title is required' : 'Title must be 3-200 characters' }}
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Host ID <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" formControlName="host" readonly>
+                  <div *ngIf="webinarForm.get('host')?.touched && webinarForm.get('host')?.invalid" class="invalid-feedback">
+                    Host ID is required
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Host Name</label>
+                  <input type="text" class="form-control" formControlName="hostName" readonly>
+                  <div *ngIf="webinarForm.get('hostName')?.touched && webinarForm.get('hostName')?.invalid" class="invalid-feedback">
+                    Host name cannot exceed 100 characters
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Date <span class="text-danger">*</span></label>
+                  <input type="date" class="form-control" formControlName="date">
+                  <div *ngIf="webinarForm.get('date')?.touched && webinarForm.get('date')?.invalid" class="invalid-feedback">
+                    Date is required
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Start Time <span class="text-danger">*</span></label>
+                  <input type="time" class="form-control" formControlName="startTime">
+                  <div *ngIf="webinarForm.get('startTime')?.touched && webinarForm.get('startTime')?.invalid" class="invalid-feedback">
+                    Start time is required
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">End Time <span class="text-danger">*</span></label>
+                  <input type="time" class="form-control" formControlName="endTime">
+                  <div *ngIf="webinarForm.get('endTime')?.touched && webinarForm.get('endTime')?.invalid" class="invalid-feedback">
+                    End time is required
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Zoom Link <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" formControlName="zoomLink" placeholder="Enter Zoom link">
+                  <div *ngIf="webinarForm.get('zoomLink')?.touched && webinarForm.get('zoomLink')?.invalid" class="invalid-feedback">
+                    {{ webinarForm.get('zoomLink')?.hasError('required') ? 'Zoom link is required' : 'Invalid URL format' }}
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Access Type <span class="text-danger">*</span></label>
+                  <select
+                    formControlName="accessType"
+                    class="form-control"
+                    [class.is-invalid]="webinarForm.get('accessType')?.touched && webinarForm.get('accessType')?.invalid">
+                    <option value="free">Free</option>
+                    <option value="paid">Paid</option>
+                  </select>
+                  <div *ngIf="webinarForm.get('accessType')?.touched && webinarForm.get('accessType')?.invalid" class="invalid-feedback">
+                    Access type is required
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Price</label>
+                  <input type="number" class="form-control" formControlName="price" placeholder="Enter price">
+                  <div *ngIf="webinarForm.get('price')?.touched && webinarForm.get('price')?.invalid" class="invalid-feedback">
+                    {{ webinarForm.get('price')?.hasError('required') ? 'Price is required for paid webinars' : 'Price cannot be negative' }}
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Max Capacity</label>
+                  <input type="number" class="form-control" formControlName="maxCapacity" placeholder="Enter max capacity">
+                  <div *ngIf="webinarForm.get('maxCapacity')?.touched && webinarForm.get('maxCapacity')?.invalid" class="invalid-feedback">
+                    Capacity must be between 1 and 1000
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Streaming Tech</label>
+                  <select formControlName="streamingTech" class="form-control">
+                    <option value="webrtc">WebRTC</option>
+                    <option value="hls">HLS</option>
+                  </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Category</label>
+                  <input type="text" class="form-control" formControlName="category" placeholder="Enter category">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Assigned Batch</label>
+                  <input type="text" class="form-control" formControlName="assignedBatch" placeholder="Enter batch">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Description</label>
+                  <textarea class="form-control" formControlName="description" placeholder="Enter description" rows="3"></textarea>
+                  <div *ngIf="webinarForm.get('description')?.touched && webinarForm.get('description')?.invalid" class="invalid-feedback">
+                    Description cannot exceed 1000 characters
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Topic</label>
+                  <input type="text" class="form-control" formControlName="topic" placeholder="Enter topic">
+                  <div *ngIf="webinarForm.get('topic')?.touched && webinarForm.get('topic')?.invalid" class="invalid-feedback">
+                    Topic cannot exceed 100 characters
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Thumbnail</label>
+                  <input type="file" class="form-control" (change)="onFileChange($event)" accept="image/*">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Allow Chat</label>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" formControlName="allowChat">
+                    <label class="form-check-label">{{ webinarForm.get('allowChat')?.value ? 'Enabled' : 'Disabled' }}</label>
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Allow Q&A</label>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" formControlName="allowQA">
+                    <label class="form-check-label">{{ webinarForm.get('allowQA')?.value ? 'Enabled' : 'Disabled' }}</label>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="closeWebinarModal()" [disabled]="modalLoading">Close</button>
+            <button type="button" class="btn btn-primary" (click)="submitWebinar()" [disabled]="modalLoading || webinarForm.invalid">
+              <span *ngIf="modalLoading" class="spinner-border spinner-border-sm me-2"></span>
+              {{ editMode ? 'Update Webinar' : 'Save Webinar' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="loading" class="text-center my-5 py-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+
+    <div class="table-responsive" *ngIf="!loading && webinars.docs && webinars.docs.length > 0">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="bg-light">
+          <tr>
+            <th class="py-3">Sr No</th>
+            <th class="py-3">Title</th>
+            <th class="py-3">Host</th>
+            <th class="py-3">Date</th>
+            <th class="py-3">Time</th>
+            <th class="py-3">Access Type</th>
+            <th class="py-3">Price</th>
+            <th class="py-3">Registrations</th>
+            <th class="py-3">Status</th>
+            <th class="py-3">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let webinar of webinars.docs | paginate: { id: paginationConfig.id, itemsPerPage: webinars.limit, currentPage: webinars.page, totalItems: webinars.totalDocs }; let i = index">
+            <tr *ngIf="webinar && webinar._id && webinar.title" class="border-bottom">
+              <td class="py-3">{{ (webinars.page - 1) * webinars.limit + i + 1 }}</td>
+              <td class="py-3">{{ webinar.title }}</td>
+              <td class="py-3">{{ webinar.hostName || 'N/A' }}</td>
+              <td class="py-3">{{ formatDate(webinar.date) }}</td>
+              <td class="py-3">{{ webinar.startTime }} - {{ webinar.endTime }}</td>
+              <td class="py-3">
+                <span class="badge" [ngClass]="webinar.accessType === 'paid' ? 'bg-success' : 'bg-primary'">
+                  {{ webinar.accessType | titlecase }}
+                </span>
+              </td>
+              <td class="py-3">{{ webinar.price || 'N/A' }}</td>
+              <td class="py-3">{{ webinar.registeredUsers?.length || 0 }}</td>
+              <td class="py-3">
+                <span class="badge" [ngClass]="{
+                  'bg-success': webinar.status === 'live',
+                  'bg-primary': webinar.status === 'scheduled',
+                  'bg-secondary': webinar.status === 'completed',
+                  'bg-danger': webinar.status === 'cancelled'
+                }">
+                  {{ webinar.status | titlecase }}
+                </span>
+              </td>
+              <td class="py-3">
+                <button class="btn btn-sm btn-outline-primary me-2" (click)="viewWebinarDetails(webinar._id)">
+                  <i class="bi bi-eye"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-warning me-2" (click)="openWebinarModal(webinar)" [disabled]="webinar.status === 'live'">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger" (click)="deleteWebinar(webinar._id)" [disabled]="webinar.status === 'live'">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+
+      <!-- Pagination Controls -->
+      <div class="d-flex justify-content-between align-items-center p-3 border-top">
+        <div *ngIf="webinars.docs && webinars.docs.length > 0" class="text-muted">
+          Showing {{ (webinars.page - 1) * webinars.limit + 1 }} to
+          {{ Math.min(webinars.page * webinars.limit, webinars.totalDocs) }}
+          of {{ webinars.totalDocs }} entries
+        </div>
+        <pagination-controls
+          [id]="paginationConfig.id"
+          [maxSize]="5"
+          [responsive]="true"
+          (pageChange)="onPageChange($event)"
+          previousLabel="Previous"
+          nextLabel="Next"
+          [directionLinks]="true">
+        </pagination-controls>
+      </div>
+    </div>
+
+    <!-- No Webinars Found -->
+    <div *ngIf="!loading && (!webinars.docs || webinars.docs.length === 0)" class="text-center my-5 py-4 px-4">
+      <div class="empty-state">
+        <i class="bi bi-camera-video fs-1 text-muted mb-3"></i>
+        <h5>No Webinars Found</h5>
+        <p class="text-muted">Try adjusting your filter criteria or date range.</p>
+        <button class="btn btn-outline-primary rounded-pill mt-3" (click)="resetFilters()">
+          <i class="bi bi-arrow-repeat me-2"></i>Reset Filters
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
