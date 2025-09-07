@@ -170,7 +170,7 @@ export class WebinarComponent implements OnInit {
         title: webinar.title,
         description: webinar.description,
         topic: webinar.topic,
-        host: webinar.host._id || this.adminId,
+        host: webinar._id || this.adminId,
         hostName: webinar.hostName || this.adminName,
         date: this.formatDateForInput(new Date(webinar.date)),
         startTime: webinar.startTime,
@@ -322,6 +322,7 @@ export class WebinarComponent implements OnInit {
     try {
       const response = await this.webinarService.getWebinarById(webinarId);
       if (response.success && response.data) {
+        console.log("wertyuio",response.data)
         this.openWebinarModal(response.data); // Open in view/edit mode
       } else {
         swalHelper.showToast(response.message || 'Failed to fetch webinar details', 'error');
