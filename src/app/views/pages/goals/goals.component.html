@@ -1,1 +1,470 @@
-<p>goals works!</p>
+<div class="container-fluid">
+  <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+    <!-- Header with Analytics -->
+    <div class="card-header bg-gradient-primary py-4">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <h4 class="mb-0 fw-bold text-white">
+            <i class="bi bi-target me-2"></i>User Goals Management
+          </h4>
+          <p class="mb-0 text-white-50">Monitor and track all user goals across the platform</p>
+        </div>
+        <div class="col-md-6">
+          <div class="row text-center">
+            <div class="col-3">
+              <div class="analytics-card">
+                <h5 class="text-white mb-1">{{ analytics.total_goals }}</h5>
+                <small class="text-white-50">Total Goals</small>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="analytics-card">
+                <h5 class="text-success mb-1">{{ analytics.completed_goals }}</h5>
+                <small class="text-white-50">Completed</small>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="analytics-card">
+                <h5 class="text-info mb-1">{{ analytics.in_progress_goals }}</h5>
+                <small class="text-white-50">In Progress</small>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="analytics-card">
+                <h5 class="text-warning mb-1">{{ Math.round(analytics.average_progress) }}%</h5>
+                <small class="text-white-50">Avg Progress</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="card-body p-0">
+      <div class="d-flex flex-wrap justify-content-between align-items-center p-3 border-bottom bg-light">
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-2 mb-md-0">
+          <div class="me-2" style="min-width: 200px;">
+            <label for="statusSelect" class="form-label mb-1">Status</label>
+            <select
+              id="statusSelect"
+              class="form-control"
+              [(ngModel)]="filters.status"
+              (change)="onFilterChange()">
+              <option value="">--All Status--</option>
+              <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
+            </select>
+          </div>
+          
+          <div class="me-2" style="min-width: 200px;">
+            <label for="categorySelect" class="form-label mb-1">Category</label>
+            <select
+              id="categorySelect"
+              class="form-control"
+              [(ngModel)]="filters.category"
+              (change)="onFilterChange()">
+              <option value="">--All Categories--</option>
+              <option *ngFor="let category of categoryOptions" [value]="category">{{ category }}</option>
+            </select>
+          </div>
+          
+          <div class="mt-4">
+            <button class="btn btn-outline-secondary" (click)="resetFilters()">
+              <i class="bi bi-x-circle me-1"></i>Reset
+            </button>
+          </div>
+        </div>
+        
+        <div class="d-flex align-items-center">
+          <div class="ms-2">
+            <select
+              id="limitSelect"
+              class="form-control"
+              [(ngModel)]="filters.limit"
+              (change)="onFilterChange()">
+              <option value="10">10 per page</option>
+              <option value="20">20 per page</option>
+              <option value="50">50 per page</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="text-center my-5 py-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+
+    <!-- Goals Table -->
+    <div class="table-responsive" *ngIf="!loading && goals && goals.length > 0">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="bg-light">
+          <tr>
+            <th class="py-3">Sr No</th>
+            <th class="py-3">User</th>
+            <th class="py-3">Goal</th>
+            <th class="py-3">Category</th>
+            <th class="py-3">Status</th>
+            <th class="py-3">Priority</th>
+            <th class="py-3">Progress</th>
+            <th class="py-3">Timeline</th>
+            <th class="py-3">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let goal of goals; let i = index" class="border-bottom">
+            <td class="py-3">{{ (currentPage - 1) * limit + i + 1 }}</td>
+            
+            <!-- User Info -->
+            <td class="py-3">
+              <div *ngIf="goal.user_id">
+                <strong>{{ goal.user_id.name || 'Unknown User' }}</strong>
+                <br>
+                <small class="text-muted">{{ goal.user_id.email || 'No email' }}</small>
+                <div *ngIf="goal.user_id.chapter_name" class="mt-1">
+                  <span class="badge bg-light text-dark">{{ goal.user_id.chapter_name }}</span>
+                </div>
+              </div>
+              <div *ngIf="!goal.user_id" class="text-muted">
+                No user data
+              </div>
+            </td>
+            
+            <!-- Goal Info -->
+            <td class="py-3">
+              <div>
+                <strong>{{ goal.title }}</strong>
+                <br>
+                <small class="text-muted">{{ goal.description || 'No description' }}</small>
+                <div class="mt-1">
+                  <small class="text-info">
+                    Target: {{ goal.target_value | number }}
+                    | Current: {{ goal.current_value | number }}
+                  </small>
+                </div>
+              </div>
+            </td>
+            
+            <!-- Category -->
+            <td class="py-3">
+              <span class="badge bg-light text-dark">
+                <i [class]="getCategoryIcon(goal.category)" class="me-1"></i>
+                {{ goal.category }}
+              </span>
+            </td>
+            
+            <!-- Status -->
+            <td class="py-3">
+              <span class="badge" [ngClass]="getStatusBadgeClass(goal.status)">
+                {{ goal.status }}
+              </span>
+            </td>
+            
+            <!-- Priority -->
+            <td class="py-3">
+              <span class="badge" [ngClass]="getPriorityBadgeClass(goal.priority)">
+                {{ goal.priority }}
+              </span>
+            </td>
+            
+            <!-- Progress -->
+            <td class="py-3">
+              <div class="progress mb-1" style="height: 8px;">
+                <div 
+                  class="progress-bar" 
+                  [ngClass]="getProgressBarClass(goal.progress_percentage)"
+                  [style.width.%]="goal.progress_percentage">
+                </div>
+              </div>
+              <small class="text-muted">
+                {{ goal.progress_percentage }}% 
+                ({{ getCompletedMilestones(goal.milestones) }}/{{ goal.milestones.length }} milestones)
+              </small>
+            </td>
+            
+            <!-- Timeline -->
+            <td class="py-3">
+              <div>
+                <small class="text-muted">Started: {{ formatDate(goal.start_date) }}</small>
+                <br>
+                <small class="text-muted">Target: {{ formatDate(goal.target_date) }}</small>
+                <br>
+                <small [ngClass]="getDaysRemainingClass(goal.target_date)">
+                  {{ getDaysRemainingText(goal.target_date) }}
+                </small>
+              </div>
+            </td>
+            
+            <!-- Actions -->
+            <td class="py-3">
+              <button 
+                class="btn btn-sm btn-outline-primary"
+                (click)="openGoalModal(goal)">
+                <i class="bi bi-eye"></i>
+                View Details
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      <div class="d-flex justify-content-between align-items-center p-3 border-top">
+        <div *ngIf="goals && goals.length > 0" class="text-muted">
+          Showing {{ (currentPage - 1) * limit + 1 }} to
+          {{ Math.min(currentPage * limit, totalDocs) }}
+          of {{ totalDocs }} entries
+        </div>
+        <pagination-controls
+          [id]="paginationConfig.id"
+          [maxSize]="5"
+          [responsive]="true"
+          (pageChange)="onPageChange($event)"
+          previousLabel="Previous"
+          nextLabel="Next"
+          [directionLinks]="true">
+        </pagination-controls>
+      </div>
+    </div>
+
+    <!-- No Goals Found -->
+    <div *ngIf="!loading && (!goals || goals.length === 0)" class="text-center my-5 py-4 px-4">
+      <div class="empty-state">
+        <i class="bi bi-target fs-1 text-muted mb-3"></i>
+        <h5>No Goals Found</h5>
+        <p class="text-muted">No user goals match your current filter criteria.</p>
+        <button class="btn btn-outline-primary rounded-pill mt-3" (click)="resetFilters()">
+          <i class="bi bi-arrow-repeat me-2"></i>Reset Filters
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Goal Details Modal -->
+<div *ngIf="showGoalModal && selectedGoal" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-target me-2"></i>Goal Details
+        </h5>
+        <button type="button" class="btn-close" (click)="closeGoalModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <!-- Goal Overview -->
+          <div class="col-md-8">
+            <div class="card border-0 bg-light mb-3">
+              <div class="card-body">
+                <h6 class="card-title">{{ selectedGoal.title }}</h6>
+                <p class="card-text">{{ selectedGoal.description || 'No description provided' }}</p>
+                
+                <div class="row">
+                  <div class="col-md-6">
+                    <strong>Category:</strong> 
+                    <span class="badge bg-light text-dark ms-2">
+                      <i [class]="getCategoryIcon(selectedGoal.category)" class="me-1"></i>
+                      {{ selectedGoal.category }}
+                    </span>
+                  </div>
+                  <div class="col-md-6">
+                    <strong>Priority:</strong> 
+                    <span class="badge ms-2" [ngClass]="getPriorityBadgeClass(selectedGoal.priority)">
+                      {{ selectedGoal.priority }}
+                    </span>
+                  </div>
+                </div>
+                
+                <div class="row mt-2">
+                  <div class="col-md-6">
+                    <strong>Status:</strong> 
+                    <span class="badge ms-2" [ngClass]="getStatusBadgeClass(selectedGoal.status)">
+                      {{ selectedGoal.status }}
+                    </span>
+                  </div>
+                  <div class="col-md-6">
+                    <strong>Visibility:</strong> {{ selectedGoal.visibility }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Progress Section -->
+            <div class="card border-0 bg-light mb-3">
+              <div class="card-body">
+                <h6 class="card-title">Progress Overview</h6>
+                <div class="progress mb-3" style="height: 20px;">
+                  <div 
+                    class="progress-bar" 
+                    [ngClass]="getProgressBarClass(selectedGoal.progress_percentage)"
+                    [style.width.%]="selectedGoal.progress_percentage">
+                    {{ selectedGoal.progress_percentage }}%
+                  </div>
+                </div>
+                
+                <div class="row">
+                  <div class="col-md-4">
+                    <strong>Target Value:</strong><br>
+                    <span class="h5 text-primary">{{ selectedGoal.target_value | number }}</span>
+                  </div>
+                  <div class="col-md-4">
+                    <strong>Current Value:</strong><br>
+                    <span class="h5 text-success">{{ selectedGoal.current_value | number }}</span>
+                  </div>
+                  <div class="col-md-4">
+                    <strong>KPIs:</strong><br>
+                    <small>{{ selectedGoal.kpis || 'Not specified' }}</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Milestones -->
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="card-title">
+                  Milestones ({{ getCompletedMilestones(selectedGoal.milestones) }}/{{ selectedGoal.milestones.length }} completed)
+                </h6>
+                
+                <div *ngIf="selectedGoal.milestones && selectedGoal.milestones.length > 0">
+                  <div *ngFor="let milestone of selectedGoal.milestones" class="milestone-item p-3 mb-2 border rounded">
+                    <div class="d-flex justify-content-between align-items-start">
+                      <div class="flex-grow-1">
+                        <h6 class="mb-1">
+                          <i class="bi" [ngClass]="milestone.completed ? 'bi-check-circle-fill text-success' : 'bi-circle text-muted'"></i>
+                          {{ milestone.title }}
+                        </h6>
+                        <p class="mb-1 text-muted">{{ milestone.description }}</p>
+                        <small class="text-muted">
+                          Target: {{ formatDate(milestone.target_date) }}
+                          <span *ngIf="milestone.completed && milestone.completion_date" class="text-success ms-2">
+                            | Completed: {{ formatDate(milestone.completion_date) }}
+                          </span>
+                        </small>
+                      </div>
+                      <span class="badge" [ngClass]="milestone.completed ? 'bg-success' : 'bg-secondary'">
+                        {{ milestone.completed ? 'Completed' : 'Pending' }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div *ngIf="!selectedGoal.milestones || selectedGoal.milestones.length === 0" class="text-center py-3">
+                  <i class="bi bi-flag fs-3 text-muted"></i>
+                  <p class="text-muted mb-0">No milestones defined for this goal</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sidebar Info -->
+          <div class="col-md-4">
+            <!-- User Info -->
+            <div class="card border-0 bg-light mb-3">
+              <div class="card-body">
+                <h6 class="card-title">Goal Owner</h6>
+                <div *ngIf="selectedGoal.user_id" class="d-flex align-items-center">
+                  <div class="avatar-placeholder bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                    {{ selectedGoal.user_id.name?.charAt(0) || 'U' }}
+                  </div>
+                  <div>
+                    <strong>{{ selectedGoal.user_id.name || 'Unknown User' }}</strong>
+                    <br>
+                    <small class="text-muted">{{ selectedGoal.user_id.email || 'No email' }}</small>
+                    <div *ngIf="selectedGoal.user_id.chapter_name">
+                      <span class="badge bg-info mt-1">{{ selectedGoal.user_id.chapter_name }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div *ngIf="!selectedGoal.user_id" class="text-muted">
+                  No user data available
+                </div>
+              </div>
+            </div>
+
+            <!-- Timeline Info -->
+            <div class="card border-0 bg-light mb-3">
+              <div class="card-body">
+                <h6 class="card-title">Timeline</h6>
+                <div class="timeline-info">
+                  <div class="mb-2">
+                    <i class="bi bi-calendar-event text-primary me-2"></i>
+                    <strong>Start Date:</strong><br>
+                    <small class="ms-4">{{ formatDate(selectedGoal.start_date) }}</small>
+                  </div>
+                  <div class="mb-2">
+                    <i class="bi bi-calendar-check text-success me-2"></i>
+                    <strong>Target Date:</strong><br>
+                    <small class="ms-4">{{ formatDate(selectedGoal.target_date) }}</small>
+                  </div>
+                  <div class="mb-2">
+                    <i class="bi bi-clock text-warning me-2"></i>
+                    <strong>Time Remaining:</strong><br>
+                    <small class="ms-4" [ngClass]="getDaysRemainingClass(selectedGoal.target_date)">
+                      {{ getDaysRemainingText(selectedGoal.target_date) }}
+                    </small>
+                  </div>
+                  <div *ngIf="selectedGoal.completed_at">
+                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                    <strong>Completed:</strong><br>
+                    <small class="ms-4">{{ formatDate(selectedGoal.completed_at) }}</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Team Goal Info -->
+            <div *ngIf="selectedGoal.is_team_goal" class="card border-0 bg-light mb-3">
+              <div class="card-body">
+                <h6 class="card-title">Team Members</h6>
+                <div *ngIf="selectedGoal.team_members && selectedGoal.team_members.length > 0">
+                  <div *ngFor="let member of selectedGoal.team_members" class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Team Member</span>
+                    <span class="badge bg-info">{{ member.role }}</span>
+                  </div>
+                </div>
+                <div *ngIf="!selectedGoal.team_members || selectedGoal.team_members.length === 0">
+                  <small class="text-muted">No team members assigned</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Additional Info -->
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="card-title">Additional Information</h6>
+                <div class="mb-2">
+                  <strong>Team Goal:</strong> 
+                  <span class="badge ms-2" [ngClass]="selectedGoal.is_team_goal ? 'bg-success' : 'bg-secondary'">
+                    {{ selectedGoal.is_team_goal ? 'Yes' : 'No' }}
+                  </span>
+                </div>
+                <div class="mb-2">
+                  <strong>Created:</strong><br>
+                  <small>{{ formatDate(selectedGoal.createdAt) }}</small>
+                </div>
+                <div class="mb-2">
+                  <strong>Last Updated:</strong><br>
+                  <small>{{ formatDate(selectedGoal.updatedAt) }}</small>
+                </div>
+                <div *ngIf="selectedGoal.notes">
+                  <strong>Notes:</strong><br>
+                  <small>{{ selectedGoal.notes }}</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeGoalModal()">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

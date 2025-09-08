@@ -211,6 +211,10 @@ class ApiEndpoints {
   public UPLOAD_RECORDING: string = `${this.PATH}/uploadRecording`;
   public APPROVE_RECORDING: string = `${this.PATH}/approveRecording`;
   public GET_WEBINAR_ANALYTICS: string = `${this.PATH}/getAnalytics`;
+
+
+  // golas management
+  public GET_ALL_GOALS: string = `${this.PATH1}/mobile/admin/goals/users`;
   
 };
 
