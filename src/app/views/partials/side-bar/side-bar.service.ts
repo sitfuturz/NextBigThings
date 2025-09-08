@@ -60,30 +60,30 @@ export class SideBarService {
           link: 'events',
           icon: 'calendar',
         },
-        {
-          title: ' Event And participation ',
-          icon: 'calendar',
-          hasSubmenu: true,
-          submenu: [
-            {
-              title: 'Bardoli Event',
-              link: 'registrationForm',
-              icon: 'calendar-check',
-            },
+        // {
+        //   title: ' Event And participation ',
+        //   icon: 'calendar',
+        //   hasSubmenu: true,
+        //   submenu: [
+        //     {
+        //       title: 'Bardoli Event',
+        //       link: 'registrationForm',
+        //       icon: 'calendar-check',
+        //     },
             
             
-            {
-              title: 'Participation',
-              link: 'participation',
-              icon: 'check-circle',
-            },
-            {
-              title: 'Attendance',
-              link: 'attendence',
-              icon: 'check-square',
-            },
-          ]
-        },
+        //     {
+        //       title: 'Participation',
+        //       link: 'participation',
+        //       icon: 'check-circle',
+        //     },
+        //     {
+        //       title: 'Attendance',
+        //       link: 'attendence',
+        //       icon: 'check-square',
+        //     },
+        //   ]
+        // },
         {
           title: 'Master Data',
           icon: 'settings',
@@ -134,11 +134,11 @@ export class SideBarService {
               link: 'batch',
               icon: 'collection',
             },
-            {
-              title: 'Sub Categories',
-              link: 'subcategory',
-              icon: 'list',
-            },
+            // {
+            //   title: 'Sub Categories',
+            //   link: 'subcategory',
+            //   icon: 'list',
+            // },
           ]
         },
         {
@@ -146,41 +146,41 @@ export class SideBarService {
           icon: 'file-text',
           hasSubmenu: true,
           submenu: [
-            {
-              title: 'Referral Given Report',
-              link: 'referralReport',
-              icon: 'corner-up-right',
-            },
-            {
-              title: 'Referral Received Report',
-              link: 'referralReportRecieved',
-              icon: 'corner-down-left',
-            },
-            {
-              title: 'Testimonial Report',
-              link: 'testimonialReport',
-              icon: 'message-square',
-            },
-            {
-              title: 'One To One Report',
-              link: 'oneTooneReport',
-              icon: 'user-check',
-            },
-            {
-              title: 'TYFCB Report',
-              link: 'tyfcb',
-              icon: 'trending-up',
-            },
-            {
-              title: 'Visitors Report',
-              link: 'VisitorsReport',
-              icon: 'user',
-            },
-            {
-              title: 'Ask Management',
-              link: 'askManagement',
-              icon: 'question-circle',
-            },
+            // {
+            //   title: 'Referral Given Report',
+            //   link: 'referralReport',
+            //   icon: 'corner-up-right',
+            // },
+            // {
+            //   title: 'Referral Received Report',
+            //   link: 'referralReportRecieved',
+            //   icon: 'corner-down-left',
+            // },
+            // {
+            //   title: 'Testimonial Report',
+            //   link: 'testimonialReport',
+            //   icon: 'message-square',
+            // },
+            // {
+            //   title: 'One To One Report',
+            //   link: 'oneTooneReport',
+            //   icon: 'user-check',
+            // },
+            // {
+            //   title: 'TYFCB Report',
+            //   link: 'tyfcb',
+            //   icon: 'trending-up',
+            // },
+            // {
+            //   title: 'Visitors Report',
+            //   link: 'VisitorsReport',
+            //   icon: 'user',
+            // },
+            // {
+            //   title: 'Ask Management',
+            //   link: 'askManagement',
+            //   icon: 'question-circle',
+            // },
             {
               title: 'Points History',
               link: 'pointHistory',
@@ -231,16 +231,16 @@ export class SideBarService {
           ]
         },
 
-        {
-          title: 'Finance',
-          link: 'finance',
-          icon: 'dollar-sign',
-        },
-        {
-          title: 'Expense',
-          link: 'expense',
-          icon: 'credit-card',
-        },
+        // {
+        //   title: 'Finance',
+        //   link: 'finance',
+        //   icon: 'dollar-sign',
+        // },
+        // {
+        //   title: 'Expense',
+        //   link: 'expense',
+        //   icon: 'credit-card',
+        // },
         {
           title: 'Analytics',
           icon: 'bar-chart',
@@ -265,11 +265,11 @@ export class SideBarService {
 
           ]
         },
-        {
-        title:'Business Data',
-        link:'LTPoints',
-        icon:'history'
-      },
+      //   {
+      //   title:'Business Data',
+      //   link:'LTPoints',
+      //   icon:'history'
+      // },
         {
         title:'Webinar',
         link:'webinar',
@@ -285,6 +285,13 @@ export class SideBarService {
         link:'goals',
         icon:'history'
       },
+        {
+        title:'Complain',
+        link:'complain',
+        icon:'compalins'
+      },
+      
+
         
       ],
     },

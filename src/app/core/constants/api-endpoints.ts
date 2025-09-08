@@ -215,6 +215,10 @@ class ApiEndpoints {
 
   // golas management
   public GET_ALL_GOALS: string = `${this.PATH1}/mobile/admin/goals/users`;
+
+  // Complaint Management
+  public GET_ALL_COMPLAINTS: string = `${this.PATH1}/mobile/getAllComplaints`;
+
   
 };
 
