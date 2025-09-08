@@ -219,6 +219,8 @@ class ApiEndpoints {
   // Complaint Management
   public GET_ALL_COMPLAINTS: string = `${this.PATH1}/mobile/getAllComplaints`;
 
+  // Suggestion Management
+  public GET_ALL_SUGGESTIONS: string = `${this.PATH1}/mobile/getAllSuggestions`;
   
 };
 

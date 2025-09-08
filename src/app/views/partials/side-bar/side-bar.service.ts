@@ -290,6 +290,11 @@ export class SideBarService {
         link:'complain',
         icon:'compalins'
       },
+        {
+        title:'Suggestion',
+        link:'suggestion',
+        icon:'suggestion'
+      },
       
 
         
