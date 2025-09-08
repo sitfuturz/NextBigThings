@@ -194,9 +194,9 @@
           <li class="nav-item">
             <a class="nav-link" [class.active]="activeTab === 'profile'" (click)="setActiveTab('profile')" style="cursor: pointer;">Profile</a>
           </li>
-          <li class="nav-item">
+          <!-- <li class="nav-item">
             <a class="nav-link" [class.active]="activeTab === 'referrals'" (click)="setActiveTab('referrals')" style="cursor: pointer;">Referrals</a>
-          </li>
+          </li> -->
           <li class="nav-item">
             <a class="nav-link" [class.active]="activeTab === 'pdf'" (click)="setActiveTab('pdf')" style="cursor: pointer;">PDF</a>
           </li>
@@ -217,9 +217,9 @@
                   </div>
                   <h4 class="mb-1 mt-2">{{selectedUser.name || 'Unknown User'}}</h4>
                   <p class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">{{selectedUser.meeting_role || 'N/A'}}</p>
-                  <div class="mt-2">
+                  <!-- <div class="mt-2">
                     <span class="badge bg-light text-dark px-3 py-2">Chapter: {{selectedUser.chapter_name || 'N/A'}}</span>
-                  </div>
+                  </div> -->
                   <div class="mt-3" *ngIf="selectedUser.points !== undefined">
                     <span class="badge bg-light text-dark px-3 py-2">Points: {{selectedUser.points}}</span>
                   </div>
@@ -502,139 +502,7 @@
             </div>
           </div>
         </div>
-        <!-- Referrals Tab Content -->
-        <div *ngIf="activeTab === 'referrals'">
-          <div class="card border-0 shadow-sm rounded-4 mb-3">
-            <div class="card-header bg-light py-3">
-              <h6 class="mb-0 fw-bold"><i class="bi bi-share-fill me-2"></i> Referral History</h6>
-            </div>
-            <div class="card-body">
-              <!-- Sub-tabs for Given and Received Referrals -->
-              <ul class="nav nav-pills mb-3">
-                <li class="nav-item">
-                  <a class="nav-link" [class.active]="referralTab === 'given'" (click)="setReferralTab('given')" style="cursor: pointer;">Given</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" [class.active]="referralTab === 'received'" (click)="setReferralTab('received')" style="cursor: pointer;">Received</a>
-                </li>
-              </ul>
-              <!-- Loading State -->
-              <div *ngIf="referralLoading" class="text-center my-5">
-                <div class="spinner-grow text-primary" role="status">
-                  <span class="visually-hidden">Loading...</span>
-                </div>
-              </div>
-              <!-- Given Referrals -->
-              <div *ngIf="referralTab === 'given' && !referralLoading">
-                <div *ngIf="referralsGiven.length > 0; else noGivenReferrals">
-                  <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                      <thead class="bg-light">
-                        <tr>
-                          <th>Receiver</th>
-                          <th>Type</th>
-                          <th>Rating</th>
-                          <th>Status</th>
-                          <th>Date</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr *ngFor="let referral of referralsGiven | paginate: { id: referralPaginationConfig.givenId, itemsPerPage: referralPayload.limit, currentPage: referralPayload.givenPage, totalItems: referralsGivenTotal }; let i=index">
-                          <td>{{referral.receiver_id?.name || 'N/A'}}</td>
-                          <td>{{referral.referral_type | titlecase}}</td>
-                          <td>{{referral.rating || 'N/A'}}</td>
-                          <td>
-                            <span class="badge" [ngClass]="{
-                              'bg-success': referral.referral_status.given_card,
-                              'bg-warning': !referral.referral_status.given_card
-                            }">
-                              {{referral.referral_status.given_card ? 'Card Given' : 'Pending'}}
-                            </span>
-                          </td>
-                          <td>{{referral.createdAt | date:'mediumDate'}}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <div class="d-flex justify-content-between align-items-center p-3 border-top">
-                    <div *ngIf="referralsGiven.length > 0" class="text-muted">
-                      Showing {{ (referralPayload.givenPage - 1) * referralPayload.limit + 1 }} to
-                      {{ Math.min(referralPayload.givenPage * referralPayload.limit, referralsGivenTotal) }}
-                      of {{ referralsGivenTotal }} entries
-                    </div>
-                    <pagination-controls
-                      [id]="referralPaginationConfig.givenId"
-                      (pageChange)="onGivenReferralPageChange($event)"
-                      previousLabel="Previous"
-                      nextLabel="Next"
-                      [directionLinks]="true">
-                    </pagination-controls>
-                  </div>
-                </div>
-                <ng-template #noGivenReferrals>
-                  <div class="text-center py-4">
-                    <i class="bi bi-info-circle fs-1 text-muted mb-3"></i>
-                    <p>No referrals given by this user.</p>
-                  </div>
-                </ng-template>
-              </div>
-              <!-- Received Referrals -->
-              <div *ngIf="referralTab === 'received' && !referralLoading">
-                <div *ngIf="referralsReceived.length > 0; else noReceivedReferrals">
-                  <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                      <thead class="bg-light">
-                        <tr>
-                          <th>Giver</th>
-                          <th>Type</th>
-                          <th>Rating</th>
-                          <th>Status</th>
-                          <th>Date</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr *ngFor="let referral of referralsReceived | paginate: { id: referralPaginationConfig.receivedId, itemsPerPage: referralPayload.limit, currentPage: referralPayload.receivedPage, totalItems: referralsReceivedTotal }; let i=index">
-                          <td>{{referral.giver_id?.name || 'N/A'}}</td>
-                          <td>{{referral.referral_type | titlecase}}</td>
-                          <td>{{referral.rating || 'N/A'}}</td>
-                          <td>
-                            <span class="badge" [ngClass]="{
-                              'bg-success': referral.referral_status.given_card,
-                              'bg-warning': !referral.referral_status.given_card
-                            }">
-                              {{referral.referral_status.given_card ? 'Card Given' : 'Pending'}}
-                            </span>
-                          </td>
-                          <td>{{referral.createdAt | date:'mediumDate'}}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <div class="d-flex justify-content-between align-items-center p-3 border-top">
-                    <div *ngIf="referralsReceived.length > 0" class="text-muted">
-                      Showing {{ (referralPayload.receivedPage - 1) * referralPayload.limit + 1 }} to
-                      {{ Math.min(referralPayload.receivedPage * referralPayload.limit, referralsReceivedTotal) }}
-                      of {{ referralsReceivedTotal }} entries
-                    </div>
-                    <pagination-controls
-                      [id]="referralPaginationConfig.receivedId"
-                      (pageChange)="onReceivedReferralPageChange($event)"
-                      previousLabel="Previous"
-                      nextLabel="Next"
-                      [directionLinks]="true">
-                    </pagination-controls>
-                  </div>
-                </div>
-                <ng-template #noReceivedReferrals>
-                  <div class="text-center py-4">
-                    <i class="bi bi-info-circle fs-1 text-muted mb-3"></i>
-                    <p>No referrals received by this user.</p>
-                  </div>
-                </ng-template>
-              </div>
-            </div>
-          </div>
-        </div>
+      
         <!-- PDF Tab Content -->
         <div *ngIf="activeTab === 'pdf'">
           <div class="card border-0 shadow-sm rounded-4 mb-3">

@@ -70,7 +70,7 @@ export class EventsComponent implements OnInit, AfterViewInit {
             event_or_meeting: ['', Validators.required],
             paid: [false],
             location: ['', [Validators.required, Validators.minLength(3)]],
-            chapter_name: ['', Validators.required],
+            chapter_name: [''],
             mapURL: [''],
             details: ['']
         });
