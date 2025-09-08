@@ -15,7 +15,7 @@ import { swalHelper } from '../../../core/constants/swal-helper';
   imports: [CommonModule, FormsModule],
   providers: [AnalyticsService],
   templateUrl: './analytics.component.html',
-  styleUrls: ['./analytics.component.scss'],
+  styleUrls: ['./analytics.component.css'],
 })
 export class AnalyticsComponent implements OnInit {
   analytics: DashboardAnalytics = {
