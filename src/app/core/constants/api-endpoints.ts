@@ -196,6 +196,22 @@ class ApiEndpoints {
   public UPDATE_BATCH: string = `${this.PATH}/updateBatch`;
   public DELETE_BATCH: string = `${this.PATH}/deleteBatch`;
   public LIST_ACTIVE_BATCHES: string = `${this.PATH}/listActiveBatches`;
+
+
+
+   // Webinar Management Endpoints
+  public CREATE_WEBINAR: string = `${this.PATH}/createWebinar`;
+  public GET_ALL_WEBINARS: string = `${this.PATH}/getAllWebinars`;
+  public GET_WEBINAR: string = `${this.PATH}/getWebinar`;
+  public UPDATE_WEBINAR: string = `${this.PATH}/updateWebinar`;
+  public DELETE_WEBINAR: string = `${this.PATH}/deleteWebinar`;
+
+  public START_STREAMING: string = `${this.PATH}/startStreaming`;
+  public END_WEBINAR: string = `${this.PATH}/endWebinar`;
+  public UPLOAD_RECORDING: string = `${this.PATH}/uploadRecording`;
+  public APPROVE_RECORDING: string = `${this.PATH}/approveRecording`;
+  public GET_WEBINAR_ANALYTICS: string = `${this.PATH}/getAnalytics`;
+  
 };
 
 

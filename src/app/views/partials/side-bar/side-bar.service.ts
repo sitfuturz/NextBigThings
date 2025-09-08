@@ -264,10 +264,23 @@ export class SideBarService {
 
 
           ]
-        },{
+        },
+        {
         title:'Business Data',
         link:'LTPoints',
-        icon:'history'}
+        icon:'history'
+      },
+        {
+        title:'Webinar',
+        link:'webinar',
+        icon:'history'
+      },
+        {
+        title:'Webinar-Manage',
+        link:'webinar-manage',
+        icon:'history'
+      },
+        
       ],
     },
   ];
