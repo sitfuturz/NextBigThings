@@ -43,16 +43,16 @@ export class SideBarService {
             //   link: 'applicationForm',
             //   icon: 'file-text',
             // },
-            {
-              title: 'Membership Form',
-              link: 'application',
-              icon: 'file-text',
-            },
-            {
-              title: 'Import Users',
-              link: 'importUsers',
-              icon: 'file-import',
-            },
+            // {
+            //   title: 'Membership Form',
+            //   link: 'application',
+            //   icon: 'file-text',
+            // },
+            // {
+            //   title: 'Import Users',
+            //   link: 'importUsers',
+            //   icon: 'file-import',
+            // },
           ]
         },
         {
@@ -181,11 +181,11 @@ export class SideBarService {
             //   link: 'askManagement',
             //   icon: 'question-circle',
             // },
-            {
-              title: 'Points History',
-              link: 'pointHistory',
-              icon: 'history',
-            },
+            // {
+            //   title: 'Points History',
+            //   link: 'pointHistory',
+            //   icon: 'history',
+            // },
             {
               title: 'Attendance Record',
               link: 'attendanceRecord',
