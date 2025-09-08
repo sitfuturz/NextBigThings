@@ -93,7 +93,11 @@ export class SideBarService {
               title: 'Countries',
               link: 'country',
               icon: 'globe',
-            },
+            },  // {
+            //   title: 'Chapters',
+            //   link: 'chapter',
+            //   icon: 'layers',
+            // },
             {
               title: 'States',
               link: 'states',
@@ -104,11 +108,7 @@ export class SideBarService {
               link: 'city',
               icon: 'map-pin',
             },
-            {
-              title: 'Chapters',
-              link: 'chapter',
-              icon: 'layers',
-            },
+          
             {
               title: 'Categories',
               link: 'category',
