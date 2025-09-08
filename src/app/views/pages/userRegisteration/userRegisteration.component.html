@@ -250,7 +250,7 @@
                 id="country"
                 [items]="countries"
                 bindLabel="name"
-                bindValue="name"
+                bindValue="_id"
                 placeholder="Select country"
                 [(ngModel)]="registerForm.country"
                 name="country"
@@ -273,7 +273,7 @@
                 id="state"
                 [items]="states"
                 bindLabel="name"
-                bindValue="name"
+                bindValue="_id"
                 placeholder="Select state"
                 [(ngModel)]="registerForm.state"
                 name="state"
@@ -293,7 +293,7 @@
                 id="city"
                 [items]="cities"
                 bindLabel="name"
-                bindValue="name"
+                bindValue="_id"
                 placeholder="Select city"
                 [(ngModel)]="registerForm.city"
                 name="city"
@@ -351,12 +351,6 @@
                 {{ validationErrors.batchId }}
               </div>
               <div *ngIf="batchesLoading" class="text-muted mt-1 small">Loading batches...</div>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="profilePic" class="form-label">Profile Picture</label>
-              <input type="file" class="form-control" id="profilePic" (change)="onFileChange($event)"
-                accept="image/*" name="profilePic">
-              <small class="text-muted">Optional: Upload an image file</small>
             </div>
           </div>
 

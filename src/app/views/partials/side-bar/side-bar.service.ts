@@ -120,6 +120,11 @@ export class SideBarService {
               icon: 'play-circle',
             },
             {
+              title: 'Session Requests',
+              link: 'sessionRequests',
+              icon: 'calendar-check',
+            },
+            {
               title: 'Videos',
               link: 'videos',
               icon: 'video',

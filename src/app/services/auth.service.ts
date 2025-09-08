@@ -1535,6 +1535,29 @@ export class EventService {
     __v: number;
   }
 
+  export interface SessionRequest {
+    _id: string;
+    userId: { _id: string; name: string; email: string; mobile_number: string };
+    sessionId: { _id: string; title: string; date: string; startTime: string };
+    status: 'pending' | 'approved' | 'rejected';
+    requestedAt: string;
+    createdAt: string;
+    updatedAt: string;
+  }
+
+  export interface SessionRequestResponse {
+    docs: SessionRequest[];
+    totalDocs: string | number;
+    limit: number;
+    page: number;
+    totalPages: number;
+    pagingCounter: number;
+    hasPrevPage: boolean;
+    hasNextPage: boolean;
+    prevPage: number | null;
+    nextPage: number | null;
+  }
+
   export interface VideoResponse {
     docs: Video[];
     totalDocs: string | number;
@@ -1816,6 +1839,71 @@ export class EventService {
       } catch (error) {
         console.error('Get Session By ID Error:', error);
         swalHelper.showToast('Failed to fetch session details', 'error');
+        throw error;
+      }
+    }
+  }
+
+  @Injectable({
+    providedIn: 'root',
+  })
+  export class SessionRequestService {
+    private headers: any = [];
+    
+    constructor(private apiManager: ApiManager, private storage: AppStorage) {}
+    
+    private getHeaders = () => {
+      this.headers = [];
+      const token = this.storage.get('token');
+      if (token != null) {
+        this.headers.push({ Authorization: `Bearer ${token}` });
+      }
+    };
+
+    async getSessionRequests(params: { 
+      page?: number; 
+      limit?: number; 
+      status?: string; 
+      userId?: string; 
+      sessionId?: string 
+    }): Promise<SessionRequestResponse> {
+      try {
+        this.getHeaders();
+        
+        const response = await this.apiManager.request(
+          {
+            url: apiEndpoints.GET_SESSION_REQUESTS,
+            method: 'POST',
+          },
+          params,
+          this.headers
+        );
+        
+        return response.data || response;
+      } catch (error) {
+        console.error('Get Session Requests Error:', error);
+        swalHelper.showToast('Failed to fetch session requests', 'error');
+        throw error;
+      }
+    }
+
+    async manageSessionRequest(requestId: string, status: 'approved' | 'rejected'): Promise<any> {
+      try {
+        this.getHeaders();
+        
+        const response = await this.apiManager.request(
+          {
+            url: apiEndpoints.MANAGE_SESSION_REQUEST,
+            method: 'POST',
+          },
+          { requestId, status },
+          this.headers
+        );
+        
+        return response;
+      } catch (error) {
+        console.error('Manage Session Request Error:', error);
+        swalHelper.showToast('Failed to manage session request', 'error');
         throw error;
       }
     }

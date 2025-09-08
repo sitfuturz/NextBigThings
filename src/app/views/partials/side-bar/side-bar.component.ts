@@ -69,7 +69,12 @@ export class SideBarComponent implements OnInit, OnDestroy, AfterViewInit {
     'podcast': 'fas fa-podcast',
     'chevron-down': 'fas fa-chevron-down',
     'chevron-right': 'fas fa-chevron-right',
-    'user-cog': 'fas fa-user-cog'
+    'user-cog': 'fas fa-user-cog',
+    'play-circle': 'fas fa-play-circle',
+    'video': 'fas fa-video',
+    'collection': 'fas fa-th-large',
+    'dollar-sign': 'fas fa-dollar-sign',
+    'chart-bar': 'fas fa-chart-bar'
   };
 
   ngOnInit() {

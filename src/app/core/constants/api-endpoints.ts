@@ -78,6 +78,8 @@ class ApiEndpoints {
   public UPDATE_SESSION: string = `${this.PATH}/session/update`
   public DELETE_SESSION: string = `${this.PATH}/session/delete`
   public GET_SESSION_BY_ID: string = `${this.PATH}/session/get-by-id`
+  public GET_SESSION_REQUESTS: string = `${this.PATH}/session/get-request`
+  public MANAGE_SESSION_REQUEST: string = `${this.PATH}/session/request/manage`
 
   // Video Management
   public CREATE_VIDEO: string = `${this.PATH}/video/create`

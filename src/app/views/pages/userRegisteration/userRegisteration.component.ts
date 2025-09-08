@@ -30,13 +30,13 @@ export class RegisterComponent implements OnInit, AfterViewInit {
     mobile_number: '',
     profilePic: null,
     date_of_birth: '',
-    city: '',
-    state: '',
-    country: '',
+    city: null,
+    state: null,
+    country: null,
     fcm: '',
     address: '',
     deviceId: '',
-    batchId: ''
+    batchId: null
   };
 
   isEditMode: boolean = false;
@@ -68,7 +68,7 @@ export class RegisterComponent implements OnInit, AfterViewInit {
     page: 1,
     limit: 10,
     search: '',
-    batchId: ''
+    batchId: null
   };
 
   // Math reference for template
@@ -93,7 +93,7 @@ export class RegisterComponent implements OnInit, AfterViewInit {
     country: '',
     state: '',
     city: '',
-    batchId: ''
+    batchId: null
   };
 
   registerModal: any;
@@ -263,13 +263,13 @@ export class RegisterComponent implements OnInit, AfterViewInit {
       mobile_number: user.mobile_number || '',
       profilePic: null,
       date_of_birth: user.date_of_birth || '',
-      city: user.city || '',
-      state: user.state || '',
-      country: user.country || '',
+      city: (user.city as any)?._id || user.city || null,
+      state: (user.state as any)?._id || user.state || null,
+      country: (user.country as any)?._id || user.country || null,
       fcm: user.fcm || '',
       address: user.address || '',
       deviceId: user.deviceId || '',
-      batchId: user.batchId || ''
+      batchId: (user.batchId as any)?._id || user.batchId || null
     };
     
     this.openRegisterModal();
@@ -325,11 +325,31 @@ export class RegisterComponent implements OnInit, AfterViewInit {
         // Refresh the users list
         this.fetchUsers();
       } else {
-        swalHelper.showToast(response.message || 'Failed to update user', 'error');
+        // Show the specific error message from the API response
+        const errorMessage = response?.error || response?.message || 'Failed to update user';
+        swalHelper.showToast(errorMessage, 'error');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating user:', error);
-      swalHelper.showToast('Failed to update user', 'error');
+      
+      // Handle different types of errors
+      let errorMessage = 'Failed to update user';
+      
+      if (error?.error?.error) {
+        // API returned an error object with error property
+        errorMessage = error.error.error;
+      } else if (error?.error?.message) {
+        // API returned an error object with message property
+        errorMessage = error.error.message;
+      } else if (error?.message) {
+        // Generic error message
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        // Error is a string
+        errorMessage = error;
+      }
+      
+      swalHelper.showToast(errorMessage, 'error');
     } finally {
       this.loading = false;
     }
@@ -342,13 +362,13 @@ export class RegisterComponent implements OnInit, AfterViewInit {
       mobile_number: '',
       profilePic: null,
       date_of_birth: '',
-      city: '',
-      state: '',
-      country: '',
+      city: null,
+      state: null,
+      country: null,
       fcm: '',
       address: '',
       deviceId: '',
-      batchId: ''
+      batchId: null
     };
 
     // Reset validation errors
@@ -382,11 +402,27 @@ export class RegisterComponent implements OnInit, AfterViewInit {
         // Refresh the users list
         this.fetchUsers();
       } else {
-        swalHelper.showToast(response.message || 'Failed to verify user', 'error');
+        // Show the specific error message from the API response
+        const errorMessage = response?.error || response?.message || 'Failed to verify user';
+        swalHelper.showToast(errorMessage, 'error');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error verifying user:', error);
-      swalHelper.showToast('Failed to verify user', 'error');
+      
+      // Handle different types of errors
+      let errorMessage = 'Failed to verify user';
+      
+      if (error?.error?.error) {
+        errorMessage = error.error.error;
+      } else if (error?.error?.message) {
+        errorMessage = error.error.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      
+      swalHelper.showToast(errorMessage, 'error');
     }
   }
 
@@ -404,11 +440,27 @@ export class RegisterComponent implements OnInit, AfterViewInit {
         // Refresh the users list
         this.fetchUsers();
       } else {
-        swalHelper.showToast(response.message || 'Failed to toggle user status', 'error');
+        // Show the specific error message from the API response
+        const errorMessage = response?.error || response?.message || 'Failed to toggle user status';
+        swalHelper.showToast(errorMessage, 'error');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error toggling user status:', error);
-      swalHelper.showToast('Failed to toggle user status', 'error');
+      
+      // Handle different types of errors
+      let errorMessage = 'Failed to toggle user status';
+      
+      if (error?.error?.error) {
+        errorMessage = error.error.error;
+      } else if (error?.error?.message) {
+        errorMessage = error.error.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      
+      swalHelper.showToast(errorMessage, 'error');
     }
   }
 
@@ -635,11 +687,31 @@ export class RegisterComponent implements OnInit, AfterViewInit {
         // Refresh the users list
         this.fetchUsers();
       } else {
-        swalHelper.showToast(response.message || 'Failed to register user', 'error');
+        // Show the specific error message from the API response
+        const errorMessage = response?.error || response?.message || 'Failed to register user';
+        swalHelper.showToast(errorMessage, 'error');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error registering user:', error);
-      swalHelper.showToast('Failed to register user', 'error');
+      
+      // Handle different types of errors
+      let errorMessage = 'Failed to register user';
+      
+      if (error?.error?.error) {
+        // API returned an error object with error property
+        errorMessage = error.error.error;
+      } else if (error?.error?.message) {
+        // API returned an error object with message property
+        errorMessage = error.error.message;
+      } else if (error?.message) {
+        // Generic error message
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        // Error is a string
+        errorMessage = error;
+      }
+      
+      swalHelper.showToast(errorMessage, 'error');
     } finally {
       this.loading = false;
     }
