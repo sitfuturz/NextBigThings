@@ -406,7 +406,7 @@ export class AuthService {
   }
 
   // User Management Methods
-  async getUsers(data: { page: number; limit: number; search: string; chapter?: string }): Promise<any> {
+  async getUsers(data: { page: number; limit: number; search: string; batchName?: string }): Promise<any> {
     try {
       this.getHeaders();
       console.log("data", data);
@@ -415,8 +415,8 @@ export class AuthService {
       if (data.search) {
         queryParams += `&search=${encodeURIComponent(data.search)}`;
       }
-      if (data.chapter) {
-        queryParams += `&chapter=${encodeURIComponent(data.chapter)}`;
+      if (data.batchName) {
+        queryParams += `&batchName=${encodeURIComponent(data.batchName)}`;
       }
       
       console.log('Sending Request with params:', queryParams);

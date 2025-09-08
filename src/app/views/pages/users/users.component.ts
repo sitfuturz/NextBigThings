@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
 import { ReferralService1 } from '../../../services/auth.service';
 import { ExportService } from '../../../services/export.service';
-import { ChapterService } from '../../../services/auth.service';
+import { BatchService } from '../../../services/auth.service';
 import { swalHelper } from '../../../core/constants/swal-helper';
 
 import { debounceTime, Subject } from 'rxjs';
@@ -28,8 +28,9 @@ declare var bootstrap: any;
 })
 export class UsersComponent implements OnInit, AfterViewInit {
   users: any = { docs: [], totalDocs: 0, limit: 10, page: 1, totalPages: 0 };
-  chapters: any[] = [];
-  selectedChapter: string | null = null;
+  batches: any[] = [];
+  selectedBatch: string | null = null;
+  batchesLoading: boolean = false;
   loading: boolean = false;
   exporting: boolean = false;
   searchQuery: string = '';
@@ -67,15 +68,15 @@ export class UsersComponent implements OnInit, AfterViewInit {
     name: '',
     mobile_number: '',
     email: '',
-    
-    meeting_role: ''
+    meeting_role: '',
+    batchId: ''
   };
   editError = {
     name: '',
     mobile_number: '',
     email: '',
-   
-    meeting_role: ''
+    meeting_role: '',
+    batchId: ''
   };
   editLoading: boolean = false;
 
@@ -88,7 +89,7 @@ export class UsersComponent implements OnInit, AfterViewInit {
     search: '',
     page: 1,
     limit: 10,
-    chapter: ''
+    batchName: ''
   };
 
   referralPayload = {
@@ -103,7 +104,7 @@ export class UsersComponent implements OnInit, AfterViewInit {
   constructor(
     private authService: AuthService,
     private referralService: ReferralService1,
-    private chapterService: ChapterService,
+    private batchService: BatchService,
     private exportService: ExportService,
     private cdr: ChangeDetectorRef
   ) {
@@ -113,7 +114,7 @@ export class UsersComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-    this.fetchChapters();
+    this.fetchBatches();
     this.fetchUsers();
   }
 
@@ -141,14 +142,20 @@ export class UsersComponent implements OnInit, AfterViewInit {
     }, 300);
   }
 
-  async fetchChapters(): Promise<void> {
+  async fetchBatches(): Promise<void> {
+    this.batchesLoading = true;
     try {
-      const chapters = await this.chapterService.getAllChaptersForDropdown();
-      this.chapters = chapters;
-      this.cdr.detectChanges();
+      const response = await this.batchService.listActiveBatches({
+        page: 1,
+        limit: 1000
+      });
+      this.batches = response.data?.batches?.docs || [];
     } catch (error) {
-      console.error('Error fetching chapters:', error);
-      swalHelper.showToast('Failed to fetch chapters', 'error');
+      console.error('Error fetching batches:', error);
+      swalHelper.showToast('Failed to fetch batches', 'error');
+    } finally {
+      this.batchesLoading = false;
+      this.cdr.detectChanges();
     }
   }
 
@@ -159,8 +166,9 @@ export class UsersComponent implements OnInit, AfterViewInit {
         page: this.payload.page,
         limit: this.payload.limit,
         search: this.payload.search,
-        chapter: this.payload.chapter
+        batchName: this.payload.batchName
       };
+      console.log ('Fetching users with payload:', requestData);  
       const response = await this.authService.getUsers(requestData);
       if (response) {
         this.users = response;
@@ -182,9 +190,11 @@ export class UsersComponent implements OnInit, AfterViewInit {
     this.searchSubject.next(this.searchQuery);
   }
 
-  onChapterChange(): void {
+  onBatchChange(): void {
     this.payload.page = 1;
-    this.payload.chapter = this.selectedChapter || '';
+    // Find the batch name from the selected batch ID
+    const selectedBatchObj = this.batches.find(batch => batch._id === this.selectedBatch);
+    this.payload.batchName = selectedBatchObj?.name || '';
     this.payload.search = '';
     this.searchQuery = '';
     this.fetchUsers();
@@ -390,10 +400,10 @@ export class UsersComponent implements OnInit, AfterViewInit {
       name: user.name || '',
       mobile_number: user.mobile_number || '',
       email: user.email || '',
-      //date_of_birth: user.date_of_birth ? new Date(user.date_of_birth).toISOString().split('T')[0] : '',
-      meeting_role: user.meeting_role || ''
+      meeting_role: user.meeting_role || '',
+      batchId: user.batchId?._id || ''
     };
-    this.editError = { name: '', mobile_number: '', email: '',  meeting_role: '' };
+    this.editError = { name: '', mobile_number: '', email: '', meeting_role: '', batchId: '' };
 
     if (this.editUserModal) {
       this.editUserModal.show();
@@ -424,7 +434,7 @@ export class UsersComponent implements OnInit, AfterViewInit {
 
   validateEditForm(): boolean {
     let isValid = true;
-    this.editError = { name: '', mobile_number: '', email: '', meeting_role: '' };
+    this.editError = { name: '', mobile_number: '', email: '', meeting_role: '', batchId: '' };
 
     if (!this.editForm.name.trim()) {
       this.editError.name = 'Name is required';
@@ -444,12 +454,12 @@ export class UsersComponent implements OnInit, AfterViewInit {
       this.editError.email = 'Invalid email format';
       isValid = false;
     }
-    // if (!this.editForm.date_of_birth) {
-    //   this.editError.date_of_birth = 'Date of birth is required';
-    //   isValid = false;
-    // }
     if (!this.editForm.meeting_role) {
       this.editError.meeting_role = 'Meeting role is required';
+      isValid = false;
+    }
+    if (!this.editForm.batchId) {
+      this.editError.batchId = 'Batch is required';
       isValid = false;
     }
 
@@ -581,7 +591,7 @@ export class UsersComponent implements OnInit, AfterViewInit {
     const currentPage = this.payload.page;
     const currentLimit = this.payload.limit;
     const currentSearch = this.payload.search;
-    const currentChapter = this.payload.chapter;
+    const currentBatch = this.payload.batchName;
 
     const generatePDF = async (allUsers: any[]): Promise<void> => {
       try {
@@ -600,8 +610,8 @@ export class UsersComponent implements OnInit, AfterViewInit {
         if (currentSearch) {
           pdf.text(`Search query: "${currentSearch}"`, margin, margin + 24);
         }
-        if (currentChapter) {
-          pdf.text(`Chapter: "${currentChapter}"`, margin, margin + 30);
+        if (currentBatch) {
+          pdf.text(`Batch: "${currentBatch}"`, margin, margin + 30);
         }
 
         interface TableColumn {
@@ -618,7 +628,7 @@ export class UsersComponent implements OnInit, AfterViewInit {
           { header: 'Role', dataKey: 'role', width: 0.15 }
         ];
 
-        const tableTop = margin + (currentChapter && currentSearch ? 36 : currentChapter || currentSearch ? 30 : 24);
+        const tableTop = margin + (currentBatch && currentSearch ? 36 : currentBatch || currentSearch ? 30 : 24);
         const tableWidth = pageWidth - (margin * 2);
         const rowHeight = 12;
 
@@ -719,7 +729,7 @@ export class UsersComponent implements OnInit, AfterViewInit {
           pdf.text(`Page ${p} of ${pageNo}`, pageWidth - 30, pageHeight - 10);
         }
 
-        pdf.save(`members_list${currentChapter ? `_${currentChapter}` : ''}.pdf`);
+        pdf.save(`members_list${currentBatch ? `_${currentBatch}` : ''}.pdf`);
         swalHelper.showToast('PDF exported successfully', 'success');
       } catch (error) {
         console.error('Error generating PDF:', error);
@@ -738,7 +748,7 @@ export class UsersComponent implements OnInit, AfterViewInit {
             page: 1,
             limit: this.users.totalDocs,
             search: currentSearch,
-            chapter: currentChapter
+            batchName: currentBatch
           };
           const response = await this.authService.getUsers(requestData);
           if (response && response.docs) {
@@ -763,7 +773,7 @@ export class UsersComponent implements OnInit, AfterViewInit {
     const currentPage = this.payload.page;
     const currentLimit = this.payload.limit;
     const currentSearch = this.payload.search;
-    const currentChapter = this.payload.chapter;
+    const currentBatch = this.payload.batchName;
 
     const generateExcel = async (allUsers: any[]): Promise<void> => {
       try {
@@ -804,14 +814,14 @@ export class UsersComponent implements OnInit, AfterViewInit {
           ['Report', 'Member List Report'],
           ['Generated on', new Date().toLocaleString()],
           ['Search query', currentSearch || 'None'],
-          ['Chapter', currentChapter || 'All'],
+          ['Batch', currentBatch || 'All'],
           ['Total Members', allUsers.length.toString()]
         ];
         const metadataSheet = XLSX.utils.aoa_to_sheet(metadata);
         metadataSheet['!cols'] = [{ wch: 20 }, { wch: 40 }];
         XLSX.utils.book_append_sheet(workbook, metadataSheet, 'Metadata');
 
-        XLSX.writeFile(workbook, `members_list${currentChapter ? `_${currentChapter}` : ''}.xlsx`);
+        XLSX.writeFile(workbook, `members_list${currentBatch ? `_${currentBatch}` : ''}.xlsx`);
         swalHelper.showToast('Excel exported successfully', 'success');
       } catch (error) {
         console.error('Error generating Excel:', error);
@@ -830,7 +840,7 @@ export class UsersComponent implements OnInit, AfterViewInit {
             page: 1,
             limit: this.users.totalDocs,
             search: currentSearch,
-            chapter: currentChapter
+            batchName: currentBatch
           };
           const response = await this.authService.getUsers(requestData);
           if (response && response.docs) {

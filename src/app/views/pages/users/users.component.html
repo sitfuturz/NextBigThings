@@ -20,14 +20,15 @@
         </div>
         <div class="me-2">
           <ng-select
-            id="chapterSelect"
-            [items]="chapters"
+            id="batchSelect"
+            [items]="batches"
             bindLabel="name"
-            bindValue="name"
-            [(ngModel)]="selectedChapter"
-            (change)="onChapterChange()"
-            placeholder="Select Chapter"
-            [clearable]="true">
+            bindValue="_id"
+            [(ngModel)]="selectedBatch"
+            (change)="onBatchChange()"
+            placeholder="Select Batch"
+            [clearable]="true"
+            [loading]="batchesLoading">
           </ng-select>
         </div>
         <div class="ms-2">
@@ -65,8 +66,8 @@
             <th class="py-3">Business</th>
             <th class="py-3">Mobile</th>
             <th class="py-3">Email</th>
-            <th class="py-3">DigitalCardLink</th>
-            <th class="py-3">User Type</th>
+            <!-- <th class="py-3">DigitalCardLink</th> -->
+            <th class="py-3">Batch</th>
             <th class="py-3">Status</th>
             <th class="text-end pe-4 py-3">Action</th>
           </tr>
@@ -103,17 +104,17 @@
                 {{user.email || 'N/A'}}
               </span>
             </td>
-            <td class="py-3">
+            <!-- <td class="py-3">
               <ng-container *ngIf="user.digitalCardLink; else noLink">
                 <a [href]="user.digitalCardLink" target="_blank" class="text-primary">
                   <i class="bi bi-link-45deg me-2"></i>Digital Card
                 </a>
               </ng-container>
               <ng-template #noLink>N/A</ng-template>
-            </td>
+            </td> -->
             <td class="py-3">
               <span class="badge rounded-pill px-3 py-2 bg-primary bg-opacity-10 text-primary">
-                {{user.meeting_role || 'N/A'}}
+                {{user.batchId.name || 'N/A'}}
               </span>
             </td>
             <td class="py-3">
@@ -572,6 +573,21 @@
               required>
             </ng-select>
             <div *ngIf="editError.meeting_role" class="text-danger small mt-1">{{editError.meeting_role}}</div>
+          </div>
+          <div class="mb-3">
+            <label for="editBatch" class="form-label">Batch <span class="text-danger">*</span></label>
+            <ng-select
+              id="editBatch"
+              [items]="batches"
+              bindLabel="name"
+              bindValue="_id"
+              [(ngModel)]="editForm.batchId"
+              name="batchId"
+              placeholder="Select batch"
+              [loading]="batchesLoading"
+              required>
+            </ng-select>
+            <div *ngIf="editError.batchId" class="text-danger small mt-1">{{editError.batchId}}</div>
           </div>
         </form>
       </div>

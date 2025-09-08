@@ -2,24 +2,19 @@ import { Component, OnInit, AfterViewInit, ChangeDetectorRef } from '@angular/co
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { NgxPaginationModule } from 'ngx-pagination';
-import { RegisterUserAuthService, User, BatchService } from '../../../services/auth.service';
+import { RegisterUserAuthService, BatchService } from '../../../services/auth.service';
 import { CountryService, Country } from '../../../services/auth.service';
 import { StateService, State } from '../../../services/auth.service';
 import { CityService, City } from '../../../services/auth.service';
-import { ChapterService, Chapter } from '../../../services/auth.service';
-import { AuthService } from '../../../services/auth.service';
-import { DashboardService } from '../../../services/auth.service';
 import { swalHelper } from '../../../core/constants/swal-helper';
 
-declare var $: any;
 declare var bootstrap: any;
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgSelectModule, NgxPaginationModule],
-  providers: [RegisterUserAuthService, CountryService, StateService, CityService, ChapterService, AuthService, DashboardService, BatchService],
+  imports: [CommonModule, FormsModule, NgSelectModule],
+  providers: [RegisterUserAuthService, CountryService, StateService, CityService, BatchService],
   templateUrl: './userRegisteration.component.html',
   styleUrls: ['./userRegisteration.component.css']
 })
@@ -39,40 +34,17 @@ export class RegisterComponent implements OnInit, AfterViewInit {
     batchId: null
   };
 
-  isEditMode: boolean = false;
-  currentEditUser: User | null = null;
-
   countries: Country[] = [];
   states: State[] = [];
   cities: City[] = [];
   batches: any[] = [];
-  users: any = { docs: [], totalDocs: 0 };
   
   loading: boolean = false;
   countriesLoading: boolean = false;
   statesLoading: boolean = false;
   citiesLoading: boolean = false;
   batchesLoading: boolean = false;
-  usersLoading: boolean = false;
-  
-  countriesLoaded: boolean = false;
-  statesLoaded: boolean = false;
-  citiesLoaded: boolean = false;
-  batchesLoaded: boolean = false;
-  usersLoaded: boolean = false;
-
-  // Search and pagination
-  searchQuery: string = '';
-  selectedBatch: string = '';
-  payload: any = {
-    page: 1,
-    limit: 10,
-    search: '',
-    batchId: null
-  };
-
-  // Math reference for template
-  Math = Math;
+  registrationSuccess: boolean = false;
 
   // Track which fields have been touched/interacted with
   touchedFields: any = {
@@ -93,7 +65,7 @@ export class RegisterComponent implements OnInit, AfterViewInit {
     country: '',
     state: '',
     city: '',
-    batchId: null
+    batchId: ''
   };
 
   registerModal: any;
@@ -104,8 +76,7 @@ export class RegisterComponent implements OnInit, AfterViewInit {
     private stateService: StateService,
     private cityService: CityService,
     private batchService: BatchService,
-    private cdr: ChangeDetectorRef,
-    private authService: AuthService
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -113,7 +84,6 @@ export class RegisterComponent implements OnInit, AfterViewInit {
     this.fetchStates();
     this.fetchCities();
     this.fetchBatches();
-    this.fetchUsers();
   }
 
   ngAfterViewInit(): void {
@@ -125,9 +95,22 @@ export class RegisterComponent implements OnInit, AfterViewInit {
     }, 300);
   }
 
+  openRegisterModal(): void {
+    this.resetForm();
+    if (this.registerModal) {
+      this.registerModal.show();
+    }
+  }
+
+  closeModal(): void {
+    if (this.registerModal) {
+      this.registerModal.hide();
+    }
+    this.resetForm();
+  }
+
   async fetchCountries(): Promise<void> {
     this.countriesLoading = true;
-    this.countriesLoaded = false;
     try {
       const response = await this.countryService.getAllCountries({
         page: 1,
@@ -135,7 +118,6 @@ export class RegisterComponent implements OnInit, AfterViewInit {
         search: ''
       });
       this.countries = response.docs;
-      this.countriesLoaded = true;
     } catch (error) {
       console.error('Error fetching countries:', error);
       swalHelper.showToast('Failed to fetch countries', 'error');
@@ -147,7 +129,6 @@ export class RegisterComponent implements OnInit, AfterViewInit {
 
   async fetchStates(): Promise<void> {
     this.statesLoading = true;
-    this.statesLoaded = false;
     try {
       const response = await this.stateService.getAllStates({
         page: 1,
@@ -155,7 +136,6 @@ export class RegisterComponent implements OnInit, AfterViewInit {
         search: ''
       });
       this.states = response.docs;
-      this.statesLoaded = true;
     } catch (error) {
       console.error('Error fetching states:', error);
       swalHelper.showToast('Failed to fetch states', 'error');
@@ -167,7 +147,6 @@ export class RegisterComponent implements OnInit, AfterViewInit {
 
   async fetchCities(): Promise<void> {
     this.citiesLoading = true;
-    this.citiesLoaded = false;
     try {
       const response = await this.cityService.getAllCities({
         page: 1,
@@ -175,7 +154,6 @@ export class RegisterComponent implements OnInit, AfterViewInit {
         search: ''
       });
       this.cities = response.docs;
-      this.citiesLoaded = true;
     } catch (error) {
       console.error('Error fetching cities:', error);
       swalHelper.showToast('Failed to fetch cities', 'error');
@@ -187,14 +165,12 @@ export class RegisterComponent implements OnInit, AfterViewInit {
 
   async fetchBatches(): Promise<void> {
     this.batchesLoading = true;
-    this.batchesLoaded = false;
     try {
       const response = await this.batchService.listActiveBatches({
         page: 1,
         limit: 1000
       });
       this.batches = response.data?.batches?.docs || [];
-      this.batchesLoaded = true;
     } catch (error) {
       console.error('Error fetching batches:', error);
       swalHelper.showToast('Failed to fetch batches', 'error');
@@ -203,267 +179,6 @@ export class RegisterComponent implements OnInit, AfterViewInit {
       this.cdr.detectChanges();
     }
   }
-
-  async fetchUsers(): Promise<void> {
-    this.usersLoading = true;
-    this.usersLoaded = false;
-    try {
-      const response = await this.authService.getUsers(this.payload);
-      this.users = response.data || response;
-      this.usersLoaded = true;
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      swalHelper.showToast('Failed to fetch users', 'error');
-    } finally {
-      this.usersLoading = false;
-      this.cdr.detectChanges();
-    }
-  }
-
-  onCityChange(): void {
-    // No longer needed since we removed chapter functionality
-  }
-
-  onSearch(): void {
-    this.payload.search = this.searchQuery;
-    this.payload.page = 1;
-    this.fetchUsers();
-  }
-
-  onBatchChange(): void {
-    this.payload.batchId = this.selectedBatch;
-    this.payload.page = 1;
-    this.fetchUsers();
-  }
-
-  onChange(): void {
-    this.payload.page = 1;
-    this.fetchUsers();
-  }
-
-  onPageChange(page: number): void {
-    this.payload.page = page;
-    this.fetchUsers();
-  }
-
-  viewUserDetails(user: User): void {
-    // TODO: Implement view user details functionality
-    console.log('View user details:', user);
-    swalHelper.showToast('View user details functionality coming soon', 'info');
-  }
-
-  editUser(user: User): void {
-    this.currentEditUser = user;
-    this.isEditMode = true;
-    
-    // Populate the registerForm with user data
-    this.registerForm = {
-      name: user.name || '',
-      email: user.email || '',
-      mobile_number: user.mobile_number || '',
-      profilePic: null,
-      date_of_birth: user.date_of_birth || '',
-      city: (user.city as any)?._id || user.city || null,
-      state: (user.state as any)?._id || user.state || null,
-      country: (user.country as any)?._id || user.country || null,
-      fcm: user.fcm || '',
-      address: user.address || '',
-      deviceId: user.deviceId || '',
-      batchId: (user.batchId as any)?._id || user.batchId || null
-    };
-    
-    this.openRegisterModal();
-  }
-
-  openRegisterModal(): void {
-    // Reset to add mode when opening for new user
-    if (!this.isEditMode) {
-      this.resetForm();
-    }
-    
-    if (this.registerModal) {
-      this.registerModal.show();
-    }
-  }
-
-  closeModal(): void {
-    if (this.registerModal) {
-      this.registerModal.hide();
-    }
-    // Reset form and mode when closing
-    this.resetForm();
-    this.isEditMode = false;
-    this.currentEditUser = null;
-  }
-
-  async updateUser(): Promise<void> {
-    if (!this.currentEditUser) {
-      swalHelper.showToast('No user selected for editing', 'error');
-      return;
-    }
-
-    try {
-      this.loading = true;
-      
-      const userData = {
-        name: this.registerForm.name,
-        email: this.registerForm.email,
-        mobile_number: this.registerForm.mobile_number,
-        date_of_birth: this.registerForm.date_of_birth,
-        city: this.registerForm.city,
-        state: this.registerForm.state,
-        country: this.registerForm.country,
-        address: this.registerForm.address,
-        batchId: this.registerForm.batchId
-      };
-
-      const response = await this.registerService.updateUser(this.currentEditUser._id, userData);
-      
-      if (response && response.success) {
-        swalHelper.showToast('User updated successfully', 'success');
-        this.closeModal();
-        // Refresh the users list
-        this.fetchUsers();
-      } else {
-        // Show the specific error message from the API response
-        const errorMessage = response?.error || response?.message || 'Failed to update user';
-        swalHelper.showToast(errorMessage, 'error');
-      }
-    } catch (error: any) {
-      console.error('Error updating user:', error);
-      
-      // Handle different types of errors
-      let errorMessage = 'Failed to update user';
-      
-      if (error?.error?.error) {
-        // API returned an error object with error property
-        errorMessage = error.error.error;
-      } else if (error?.error?.message) {
-        // API returned an error object with message property
-        errorMessage = error.error.message;
-      } else if (error?.message) {
-        // Generic error message
-        errorMessage = error.message;
-      } else if (typeof error === 'string') {
-        // Error is a string
-        errorMessage = error;
-      }
-      
-      swalHelper.showToast(errorMessage, 'error');
-    } finally {
-      this.loading = false;
-    }
-  }
-
-  resetForm(): void {
-    this.registerForm = {
-      name: '',
-      email: '',
-      mobile_number: '',
-      profilePic: null,
-      date_of_birth: '',
-      city: null,
-      state: null,
-      country: null,
-      fcm: '',
-      address: '',
-      deviceId: '',
-      batchId: null
-    };
-
-    // Reset validation errors
-    this.validationErrors = {
-      name: '',
-      email: '',
-      mobile_number: '',
-      country: '',
-      state: '',
-      city: '',
-      batchId: ''
-    };
-
-    // Reset touched fields
-    this.touchedFields = {
-      name: false,
-      email: false,
-      mobile_number: false,
-      country: false,
-      state: false,
-      city: false,
-      batchId: false
-    };
-  }
-
-  async verifyUser(user: User): Promise<void> {
-    try {
-      const response = await this.registerService.verifyUserAndAssignBatch(user._id);
-      if (response && response.success) {
-        swalHelper.showToast('User verified and batch assigned successfully', 'success');
-        // Refresh the users list
-        this.fetchUsers();
-      } else {
-        // Show the specific error message from the API response
-        const errorMessage = response?.error || response?.message || 'Failed to verify user';
-        swalHelper.showToast(errorMessage, 'error');
-      }
-    } catch (error: any) {
-      console.error('Error verifying user:', error);
-      
-      // Handle different types of errors
-      let errorMessage = 'Failed to verify user';
-      
-      if (error?.error?.error) {
-        errorMessage = error.error.error;
-      } else if (error?.error?.message) {
-        errorMessage = error.error.message;
-      } else if (error?.message) {
-        errorMessage = error.message;
-      } else if (typeof error === 'string') {
-        errorMessage = error;
-      }
-      
-      swalHelper.showToast(errorMessage, 'error');
-    }
-  }
-
-  toggleUserVerification(user: User): void {
-    if (!user.verified) {
-      this.verifyUser(user);
-    }
-  }
-
-  async toggleUserStatus(user: User): Promise<void> {
-    try {
-      const response = await this.registerService.toggleUserStatus(user._id);
-      if (response && response.success) {
-        swalHelper.showToast(`User status changed to ${response.data ? 'Active' : 'Inactive'}`, 'success');
-        // Refresh the users list
-        this.fetchUsers();
-      } else {
-        // Show the specific error message from the API response
-        const errorMessage = response?.error || response?.message || 'Failed to toggle user status';
-        swalHelper.showToast(errorMessage, 'error');
-      }
-    } catch (error: any) {
-      console.error('Error toggling user status:', error);
-      
-      // Handle different types of errors
-      let errorMessage = 'Failed to toggle user status';
-      
-      if (error?.error?.error) {
-        errorMessage = error.error.error;
-      } else if (error?.error?.message) {
-        errorMessage = error.error.message;
-      } else if (error?.message) {
-        errorMessage = error.message;
-      } else if (typeof error === 'string') {
-        errorMessage = error;
-      }
-      
-      swalHelper.showToast(errorMessage, 'error');
-    }
-  }
-
 
   onMobileInput(event: any): void {
     const input = event.target;
@@ -634,6 +349,54 @@ export class RegisterComponent implements OnInit, AfterViewInit {
     }
   }
 
+  resetForm(): void {
+    this.registerForm = {
+      name: '',
+      email: '',
+      mobile_number: '',
+      profilePic: null,
+      date_of_birth: '',
+      city: null,
+      state: null,
+      country: null,
+      fcm: '',
+      address: '',
+      deviceId: '',
+      batchId: null
+    };
+
+    // Reset validation errors
+    this.validationErrors = {
+      name: '',
+      email: '',
+      mobile_number: '',
+      country: '',
+      state: '',
+      city: '',
+      batchId: ''
+    };
+
+    // Reset touched fields
+    this.touchedFields = {
+      name: false,
+      email: false,
+      mobile_number: false,
+      country: false,
+      state: false,
+      city: false,
+      batchId: false
+    };
+
+    // Hide success message
+    this.registrationSuccess = false;
+
+    // Reset file input
+    const fileInput = document.getElementById('profilePic') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  }
+
   async registerUser(): Promise<void> {
     try {
       // Mark all required fields as touched before final validation
@@ -645,6 +408,8 @@ export class RegisterComponent implements OnInit, AfterViewInit {
       }
 
       this.loading = true;
+      this.registrationSuccess = false;
+      
       const formData = new FormData();
       
       // Add required fields
@@ -682,10 +447,13 @@ export class RegisterComponent implements OnInit, AfterViewInit {
       
       if (response && response.success) {
         swalHelper.showToast('User registered successfully', 'success');
+        this.registrationSuccess = true;
         this.closeModal();
-        this.resetForm();
-        // Refresh the users list
-        this.fetchUsers();
+        
+        // Show success message after modal closes
+        setTimeout(() => {
+          this.registrationSuccess = true;
+        }, 500);
       } else {
         // Show the specific error message from the API response
         const errorMessage = response?.error || response?.message || 'Failed to register user';
