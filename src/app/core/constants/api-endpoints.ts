@@ -203,11 +203,13 @@ class ApiEndpoints {
   public GET_WEBINAR: string = `${this.PATH}/getWebinar`;
   public UPDATE_WEBINAR: string = `${this.PATH}/updateWebinar`;
   public DELETE_WEBINAR: string = `${this.PATH}/deleteWebinar`;
+
   public START_STREAMING: string = `${this.PATH}/startStreaming`;
   public END_WEBINAR: string = `${this.PATH}/endWebinar`;
   public UPLOAD_RECORDING: string = `${this.PATH}/uploadRecording`;
   public APPROVE_RECORDING: string = `${this.PATH}/approveRecording`;
   public GET_WEBINAR_ANALYTICS: string = `${this.PATH}/getAnalytics`;
+  
 };
 
 
