@@ -5191,31 +5191,31 @@ export class FinanceService {
           }
         };
       
-        async getAnalyticsByDateRange(data: any): Promise<any> {
-          try {
-            this.getHeaders();
+    //     async getAnalyticsByDateRange(data: any): Promise<any> {
+    //       try {
+    //         this.getHeaders();
             
            
           
             
-            const response = await this.apiManager.request(
-              {
+    //         const response = await this.apiManager.request(
+    //           {
                
-                method: 'POST',
-                url: apiEndpoints.GET_ANALYTICS_BY_DATE_RANGE ,
-              },
-              data,
-              this.headers
-            );
+    //             method: 'POST',
+    //             url: apiEndpoints.GET_ANALYTICS_BY_DATE_RANGE ,
+    //           },
+    //           data,
+    //           this.headers
+    //         );
             
-        return response;
-      } catch (error) {
+    //     return response;
+    //   } catch (error) {
         
-        // Handle specific error cases
+    //     // Handle specific error cases
         
           
-      }
-    }
+    //   }
+    // }
   }
 
     export interface BatchUser {

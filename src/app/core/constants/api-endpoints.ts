@@ -23,7 +23,11 @@ class ApiEndpoints {
   public CONVERT_TO_USER: string = `${this.PATH}/convert-to-user`
   public GET_OTP: string = `${this.PATH}/getOtpRecords`
 
-  public GET_ANALYTICS_BY_DATE_RANGE = `${this.PATH}/getAnalyticsByDateRange`
+  // public GET_ANALYTICS_BY_DATE_RANGE = `${this.PATH}/getAnalyticsByDateRange`
+public GET_DASHBOARD_ANALYTICS = `${this.PATH}/getDashboardAnalytics`;
+public GET_CHART_DATA = `${this.PATH}/getChartData`;
+public GET_RECENT_ACTIVITIES = `${this.PATH}/getRecentActivities`;
+
 
   public GET_ALL_STATES: string = `${this.PATH}/getAllStates`
   public CREATE_STATE: string = `${this.PATH}/createState`
