@@ -2,10 +2,10 @@
   <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
   <div class="card-header bg-gradient-primary d-flex justify-content-between align-items-center py-3">
   <h4 class="mb-0 fw-bold text-white">
-  <i class="bi bi-mic-fill me-2"></i>Podcast Management
+  <i class="bi bi-mic-fill me-2"></i>Training Management
   </h4>
   <button class="btn btn-light rounded-pill px-4" (click)="openAddPodcastModal()">
-  <i class="bi bi-plus-circle me-2"></i>Add Podcast
+  <i class="bi bi-plus-circle me-2"></i>Add Trainer
   </button>
   </div>
   <div class="card-body p-0">
@@ -35,7 +35,7 @@
   <thead class="bg-light">
   <tr>
   <th class="ps-4 py-3">Image</th>
-  <th class="py-3">Podcaster</th>
+  <th class="py-3">Trainer</th>
   <th class="py-3">Venue</th>
   <th class="py-3">Date Range</th>
   <th class="py-3">Status</th>
@@ -131,10 +131,10 @@
   <div *ngIf="!loading && (!podcasts?.podcasts || podcasts?.podcasts?.length === 0)" class="text-center my-5 py-4 px-4">
   <div class="empty-state">
   <i class="bi bi-mic fs-1 text-muted mb-3"></i>
-  <h5>No Podcasts Found</h5>
+  <h5>No Training Found</h5>
   <p class="text-muted">Try adding some podcasts or adjusting your search criteria.</p>
   <button class="btn btn-primary rounded-pill mt-3" (click)="openAddPodcastModal()">
-  <i class="bi bi-plus-circle me-2"></i>Add Podcast
+  <i class="bi bi-plus-circle me-2"></i>Add Trainer
   </button>
   </div>
   </div>
@@ -147,7 +147,7 @@
   <div class="modal-content border-0 shadow rounded-4 overflow-hidden">
   <div class="modal-header bg-light">
   <h5 class="modal-title" id="imagePreviewModalTitle">
-  <i class="bi bi-mic-fill me-2"></i>Podcast Details
+  <i class="bi bi-mic-fill me-2"></i>Trainer Details
   </h5>
   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
   </div>
@@ -227,7 +227,7 @@
   <div class="modal-content border-0 shadow rounded-4 overflow-hidden">
   <div class="modal-header bg-light">
   <h5 class="modal-title" id="podcastModalTitle">
-  <i class="bi bi-mic-fill me-2"></i> {{editMode ? 'Edit Podcast' : 'Add New Podcast'}}
+  <i class="bi bi-mic-fill me-2"></i> {{editMode ? 'Edit Trainer' : 'Add New Training'}}
   </h5>
   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" (click)="closeModal()"></button>
   </div>
@@ -235,27 +235,27 @@
   <form #podcastForm="ngForm">
   <div class="row">
   <div class="col-md-6 mb-3">
-  <label for="podcasterName" class="form-label">Podcaster Name <span class="text-danger">*</span></label>
+  <label for="podcasterName" class="form-label">Trainer Name <span class="text-danger">*</span></label>
   <input type="text" class="form-control" id="podcasterName" placeholder="Enter podcaster name"
   [(ngModel)]="newPodcast.podcasterName" name="podcasterName" required #nameInput="ngModel"
   [class.is-invalid]="nameInput.invalid && (nameInput.dirty || nameInput.touched)">
   <div class="invalid-feedback" *ngIf="nameInput.invalid && (nameInput.dirty || nameInput.touched)">
-  Podcaster name is required.
+  Trainer name is required.
   </div>
   </div>
   <div class="col-md-6 mb-3">
-  <label for="podcasterImage" class="form-label">Podcaster Image <span class="text-danger">*</span></label>
+  <label for="podcasterImage" class="form-label">Trainer Image <span class="text-danger">*</span></label>
   <input type="file" class="form-control" id="podcasterImage" accept="image/*"
   (change)="onImageSelect($event)" name="podcasterImage" #imageInput
   [class.is-invalid]="!imagePreview && !editMode && formSubmitted">
   <div class="invalid-feedback" *ngIf="!imagePreview && !editMode && formSubmitted">
-  Podcaster image is required.
+  Trainer image is required.
   </div>
   <small class="form-text text-muted">Supported formats: JPG, PNG (Max: 5MB).</small>
   </div>
   </div>
   <div class="mb-3">
-  <label for="aboutPodcaster" class="form-label">About Podcaster</label>
+  <label for="aboutPodcaster" class="form-label">About Trainer</label>
   <textarea class="form-control" id="aboutPodcaster" rows="3" placeholder="Enter about podcaster"
   [(ngModel)]="newPodcast.aboutPodcaster" name="aboutPodcaster" #aboutInput="ngModel"></textarea>
   </div>

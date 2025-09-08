@@ -219,12 +219,12 @@ export class SideBarService {
               icon: 'cog',
             },
             {
-              title: 'Podcasts',
+              title: 'Training',
               link: 'podcasts',
               icon: 'podcast',
             },
             {
-              title: 'Podcast Booking',
+              title: 'Training Booking',
               link: 'podcastBooking',
               icon: 'calendar-check',
             },  
