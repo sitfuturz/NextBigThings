@@ -31,8 +31,8 @@ export class AdminLoginComponent implements OnInit, OnDestroy {
   loginForm = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
     password: new FormControl('', [Validators.required, Validators.minLength(6)]),
-    role: new FormControl('', [Validators.required]),
-    chapter: new FormControl('', [Validators.required]),
+    // role: new FormControl('', [Validators.required]),
+    // chapter: new FormControl('', [Validators.required]),
   });
 
   forgotPasswordForm = new FormGroup({
@@ -103,8 +103,8 @@ export class AdminLoginComponent implements OnInit, OnDestroy {
       const credentials = {
         email: this.loginForm.value.email as string,
         password: this.loginForm.value.password as string,
-        role: this.loginForm.value.role as string,
-        chapter: this.loginForm.value.chapter as string,
+        // role: this.loginForm.value.role as string,
+        // chapter: this.loginForm.value.chapter as string,
       };
 
       const response = await this.authService.adminLogin(credentials);

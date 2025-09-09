@@ -1,8 +1,8 @@
 export const environment = {
   production: true,
-  baseURL: 'https://gbs-connect.com',
+  baseURL: 'https://nextbigthing.itfuturz.in',
   route: 'admin',
-  imageUrl:'https://gbs-connect.com/'
+  imageUrl:'https://nextbigthing.itfuturz.in/'
 };
 
 
