@@ -89,9 +89,9 @@
             <th class="py-3">Date</th>
             <th class="py-3">Time</th>
             <th class="py-3">Status</th>
-            <th class="py-3">Recording</th>
+            <!-- <th class="py-3">Recording</th> -->
             <th class="py-3">Registrations</th>
-            <th class="py-3">Live Attendees</th>
+            <!-- <th class="py-3">Live Attendees</th> -->
             <th class="py-3">Operations</th>
           </tr>
         </thead>
@@ -113,7 +113,7 @@
                   {{ webinar.status | titlecase }}
                 </span>
               </td>
-              <td class="py-3">
+              <!-- <td class="py-3">
                 <span class="badge" [ngClass]="getRecordingStatusBadgeClass(webinar.recordingStatus)">
                   {{ webinar.recordingStatus | titlecase }}
                 </span>
@@ -123,17 +123,17 @@
                     {{ webinar.recordingRequests.length }} requests
                   </small>
                 </div>
-              </td>
+              </td> -->
               <td class="py-3">
                 <span class="badge bg-info">
                   {{ webinar.registeredUsers?.length || 0 }}
                 </span>
               </td>
-              <td class="py-3">
+              <!-- <td class="py-3">
                 <span class="badge bg-success">
                   {{ webinar.currentLiveCount || 0 }}
                 </span>
-              </td>
+              </td> -->
               <td class="py-3">
                 <div class="btn-group" role="group">
                   <!-- Start Streaming Button -->

@@ -46,8 +46,12 @@ export class VideosComponent implements OnInit, AfterViewInit {
     description: '',
     categoryId: '',
     isPremium: false,
-    videoFile: null as File | null
+    videoFile: null as File | null,
+    videoUrl: '' as string,
+    thumbnail: null as File | null
   };
+
+  videoInputType: 'file' | 'url' = 'file';
 
   categories: Category[] = [];
   
@@ -194,12 +198,15 @@ export class VideosComponent implements OnInit, AfterViewInit {
 
   openAddVideoModal(): void {
     this.editMode = false;
+    this.videoInputType = 'file';
     this.newVideo = {
       title: '',
       description: '',
       categoryId: '',
       isPremium: false,
-      videoFile: null as File | null
+      videoFile: null as File | null,
+      videoUrl: '',
+      thumbnail: null as File | null
     };
     
     this.showModal();
@@ -208,12 +215,15 @@ export class VideosComponent implements OnInit, AfterViewInit {
   openEditVideoModal(video: Video): void {
     this.editMode = true;
     this.selectedVideo = video;
+    this.videoInputType = video.url ? 'url' : 'file';
     this.newVideo = {
       title: video.title,
       description: video.description || '',
       categoryId: video.categoryId && typeof video.categoryId === 'object' ? video.categoryId._id : video.categoryId || '',
       isPremium: video.isPremium || false,
-      videoFile: null as File | null // Don't pre-populate video file in edit mode
+      videoFile: null as File | null, // Don't pre-populate video file in edit mode
+      videoUrl: video.url || '',
+      thumbnail: null as File | null
     };
     
     this.showModal();
@@ -275,13 +285,70 @@ export class VideosComponent implements OnInit, AfterViewInit {
     }
   }
 
+  onThumbnailChange(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        swalHelper.showToast('Please select a valid image file', 'error');
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        swalHelper.showToast('Thumbnail size must be less than 5MB', 'error');
+        return;
+      }
+      
+      this.newVideo.thumbnail = file;
+    } else {
+      this.newVideo.thumbnail = null;
+    }
+  }
+
+  clearThumbnail(): void {
+    this.newVideo.thumbnail = null;
+    const thumbnailInput = document.getElementById('thumbnail') as HTMLInputElement;
+    if (thumbnailInput) {
+      thumbnailInput.value = '';
+    }
+  }
+
   clearVideoFile(): void {
     this.newVideo.videoFile = null;
+    this.newVideo.videoUrl = '';
     // Clear the file input
     const fileInput = document.getElementById('videoFile') as HTMLInputElement;
     if (fileInput) {
       fileInput.value = '';
     }
+    // Clear URL input
+    const urlInput = document.getElementById('videoUrl') as HTMLInputElement;
+    if (urlInput) {
+      urlInput.value = '';
+    }
+  }
+
+  onInputTypeChange(): void {
+    // Clear both inputs when switching types
+    this.newVideo.videoFile = null;
+    this.newVideo.videoUrl = '';
+    const fileInput = document.getElementById('videoFile') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+    const urlInput = document.getElementById('videoUrl') as HTMLInputElement;
+    if (urlInput) {
+      urlInput.value = '';
+    }
+  }
+
+  getThumbnailUrl(): string {
+    if (this.newVideo.thumbnail) {
+      return URL.createObjectURL(this.newVideo.thumbnail);
+    }
+    return '';
   }
 
   async saveVideo(): Promise<void> {
@@ -292,16 +359,32 @@ export class VideosComponent implements OnInit, AfterViewInit {
         return;
       }
 
-      // For new videos, video file is required
-      if (!this.editMode && !this.newVideo.videoFile) {
-        swalHelper.showToast('Please select a video file', 'warning');
+      // For new videos, video file or URL is required
+      if (!this.editMode && !this.newVideo.videoFile && !this.newVideo.videoUrl) {
+        swalHelper.showToast('Please select a video file or provide a video URL', 'warning');
         return;
       }
 
-      // For edit mode, video file is optional (only required if user wants to update the video)
-      if (this.editMode && !this.newVideo.videoFile) {
-        // User doesn't want to update the video file, just update other fields
-        console.log('Updating video without changing the video file');
+      // For file upload, validate the file
+      if (this.videoInputType === 'file' && this.newVideo.videoFile) {
+        // Validate file type
+        if (!this.newVideo.videoFile.type.startsWith('video/')) {
+          swalHelper.showToast('Please select a valid video file', 'error');
+          return;
+        }
+        
+        // Validate file size (max 100MB)
+        const maxSize = 100 * 1024 * 1024; // 100MB
+        if (this.newVideo.videoFile.size > maxSize) {
+          swalHelper.showToast('Video file size must be less than 100MB', 'error');
+          return;
+        }
+      }
+
+      // For URL input, validate the URL
+      if (this.videoInputType === 'url' && this.newVideo.videoUrl && !this.isValidUrl(this.newVideo.videoUrl)) {
+        swalHelper.showToast('Please enter a valid URL', 'error');
+        return;
       }
 
       this.loading = true;
@@ -312,9 +395,16 @@ export class VideosComponent implements OnInit, AfterViewInit {
       formData.append('categoryId', this.newVideo.categoryId);
       formData.append('isPremium', this.newVideo.isPremium.toString());
       
-      // Only append video file if it exists (for new videos or when updating video file)
-      if (this.newVideo.videoFile) {
+      // Append video file or URL based on input type
+      if (this.videoInputType === 'file' && this.newVideo.videoFile) {
         formData.append('videoFile', this.newVideo.videoFile);
+      } else if (this.videoInputType === 'url' && this.newVideo.videoUrl) {
+        formData.append('url', this.newVideo.videoUrl);
+      }
+
+      // Append thumbnail if provided
+      if (this.newVideo.thumbnail) {
+        formData.append('thumbnail', this.newVideo.thumbnail);
       }
 
       const response = this.editMode && this.selectedVideo
@@ -333,6 +423,15 @@ export class VideosComponent implements OnInit, AfterViewInit {
       swalHelper.showToast(error.message || 'Failed to save video', 'error');
     } finally {
       this.loading = false;
+    }
+  }
+
+  isValidUrl(url: string): boolean {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
     }
   }
 
@@ -451,8 +550,10 @@ export class VideosComponent implements OnInit, AfterViewInit {
   }
 
   getNewVideoUrl(): string {
-    if (this.newVideo.videoFile) {
+    if (this.videoInputType === 'file' && this.newVideo.videoFile) {
       return URL.createObjectURL(this.newVideo.videoFile);
+    } else if (this.videoInputType === 'url' && this.newVideo.videoUrl) {
+      return this.newVideo.videoUrl;
     }
     return '';
   }

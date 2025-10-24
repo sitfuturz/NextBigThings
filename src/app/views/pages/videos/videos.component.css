@@ -1,3 +1,51 @@
+/* Thumbnail Preview Styles */
+.thumbnail-preview-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.thumbnail-preview {
+  max-width: 200px;
+  max-height: 150px;
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+  object-fit: cover;
+  transition: border-color 0.2s ease;
+}
+
+.thumbnail-preview:hover {
+  border-color: #667eea;
+}
+
+/* Button Group Toggle Styles */
+.btn-group {
+  border-radius: 0.375rem;
+  overflow: hidden;
+}
+
+.btn-group .btn {
+  border-radius: 0;
+}
+
+.btn-group .btn:first-child {
+  border-top-left-radius: 0.375rem;
+  border-bottom-left-radius: 0.375rem;
+}
+
+.btn-group .btn:last-child {
+  border-top-right-radius: 0.375rem;
+  border-bottom-right-radius: 0.375rem;
+}
+
+.btn-group .btn {
+  transition: all 0.2s ease;
+}
+
+.btn-group .btn:hover {
+  transform: none;
+}
+
 /* Videos Component Styles */
 .bg-gradient-primary {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);

@@ -141,11 +141,11 @@ export class SideBarService {
             // },
           ]
         },
-        {
-          title: 'Reports Sections',
-          icon: 'file-text',
-          hasSubmenu: true,
-          submenu: [
+        // {
+        //   title: 'Reports Sections',
+        //   icon: 'file-text',
+        //   hasSubmenu: true,
+        //   submenu: [
             // {
             //   title: 'Referral Given Report',
             //   link: 'referralReport',
@@ -186,18 +186,18 @@ export class SideBarService {
             //   link: 'pointHistory',
             //   icon: 'history',
             // },
-            {
-              title: 'Attendance Record',
-              link: 'attendanceRecord',
-              icon: 'clipboard',
-            },
+            // {
+            //   title: 'Attendance Record',
+            //   link: 'attendanceRecord',
+            //   icon: 'clipboard',
+            // },
             // {
             //   title: 'Fees Record',
             //   link: 'fees',
             //   icon: 'credit-card',
             // },
-          ]
-        },
+        //   ]
+        // },
         {
           title: 'Content Management',
           icon: 'layout',
@@ -256,11 +256,11 @@ export class SideBarService {
               link: 'analytics',
               icon: 'chart-bar',
             },
-            {
-              title: 'Attendance Data',
-              link: 'attendanceRecord',
-              icon: 'clipboard-list',
-            },
+            // {
+            //   title: 'Attendance Data',
+            //   link: 'attendanceRecord',
+            //   icon: 'clipboard-list',
+            // },
 
 
           ]

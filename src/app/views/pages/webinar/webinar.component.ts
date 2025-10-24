@@ -79,12 +79,7 @@ export class WebinarComponent implements OnInit {
       zoomLink: ['', [Validators.required, Validators.pattern(/^(https?:\/\/[^\s$.?#].[^\s]*)$/)]],
       accessType: ['free', Validators.required],
       price: [0, [Validators.min(0)]],
-      maxCapacity: [100, [Validators.min(1), Validators.max(1000)]],
-      streamingTech: ['webrtc', Validators.required],
-      allowChat: [true],
-      allowQA: [true],
       category: [''],
-      assignedBatch: [''],
       thumbnail: [null],
     }, {
       validators: this.priceValidator
@@ -125,7 +120,22 @@ export class WebinarComponent implements OnInit {
     const price = form.get('price')?.value;
     if (accessType === 'paid' && (!price || price <= 0)) {
       form.get('price')?.setErrors({ required: true, min: true });
-      return { invalidPrice: true };
+      return null; // Don't return form-level error
+    } else {
+      // Clear errors if conditions are met
+      const priceControl = form.get('price');
+      if (priceControl) {
+        const errors = priceControl.errors;
+        if (errors) {
+          delete errors['required'];
+          delete errors['min'];
+          if (Object.keys(errors).length === 0) {
+            priceControl.setErrors(null);
+          } else {
+            priceControl.setErrors(errors);
+          }
+        }
+      }
     }
     return null;
   }
@@ -178,12 +188,7 @@ export class WebinarComponent implements OnInit {
         zoomLink: webinar.zoomLink,
         accessType: webinar.accessType,
         price: webinar.price,
-        maxCapacity: webinar.maxCapacity,
-        streamingTech: webinar.streamingTech,
-        allowChat: webinar.allowChat,
-        allowQA: webinar.allowQA,
         category: webinar.category,
-        assignedBatch: webinar.assignedBatch,
         thumbnail: null,
       });
     } else {
@@ -192,10 +197,6 @@ export class WebinarComponent implements OnInit {
         hostName: this.adminName,
         accessType: 'free',
         price: 0,
-        maxCapacity: 100,
-        streamingTech: 'webrtc',
-        allowChat: true,
-        allowQA: true,
       });
     }
     this.cdr.detectChanges();
@@ -210,10 +211,6 @@ export class WebinarComponent implements OnInit {
       hostName: this.adminName,
       accessType: 'free',
       price: 0,
-      maxCapacity: 100,
-      streamingTech: 'webrtc',
-      allowChat: true,
-      allowQA: true,
     });
     this.cdr.detectChanges();
   }
@@ -245,12 +242,7 @@ export class WebinarComponent implements OnInit {
           zoomLink: formValue.zoomLink,
           accessType: formValue.accessType,
           price: formValue.price,
-          maxCapacity: formValue.maxCapacity,
-          streamingTech: formValue.streamingTech,
-          allowChat: formValue.allowChat,
-          allowQA: formValue.allowQA,
           category: formValue.category,
-          assignedBatch: formValue.assignedBatch,
         };
         const response = await this.webinarService.updateWebinar(updateData, thumbnail);
         if (response.success) {
@@ -273,12 +265,7 @@ export class WebinarComponent implements OnInit {
           zoomLink: formValue.zoomLink,
           accessType: formValue.accessType,
           price: formValue.price,
-          maxCapacity: formValue.maxCapacity,
-          streamingTech: formValue.streamingTech,
-          allowChat: formValue.allowChat,
-          allowQA: formValue.allowQA,
           category: formValue.category,
-          assignedBatch: formValue.assignedBatch,
         };
         const response = await this.webinarService.createWebinar(createData, thumbnail);
         if (response.success) {
@@ -341,8 +328,13 @@ export class WebinarComponent implements OnInit {
       const controlErrors = this.webinarForm.get(key)?.errors;
       if (controlErrors) {
         console.log(`Field: ${key}, Errors:`, controlErrors);
+        console.log(`Field: ${key}, Value:`, this.webinarForm.get(key)?.value);
       }
     });
+    // Log form-level errors
+    if (this.webinarForm.errors) {
+      console.log('Form-level errors:', this.webinarForm.errors);
+    }
   }
 
   onFilterChange(): void {

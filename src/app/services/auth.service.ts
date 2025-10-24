@@ -1576,6 +1576,7 @@ export class EventService {
     title: string;
     description?: string;
     url: string;
+    thumbnail?: string;
     categoryId: { _id: string; name: string };
     isPremium: boolean;
     uploadedBy: string | { _id: string; name: string; email: string };

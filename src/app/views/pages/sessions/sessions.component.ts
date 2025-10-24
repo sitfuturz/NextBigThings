@@ -59,8 +59,11 @@ export class SessionsComponent implements OnInit, AfterViewInit {
     endTime: '',
     thumbnail: null as File | null,
     files: null as File[] | null,
-    videos: null as File[] | null
+    videos: null as File[] | null,
+    videoUrls: [] as string[]
   };
+
+  videoInputType: 'file' | 'url' = 'file';
 
   categories: Category[] = [];
   
@@ -194,6 +197,7 @@ export class SessionsComponent implements OnInit, AfterViewInit {
 
   openAddSessionModal(): void {
     this.editMode = false;
+    this.videoInputType = 'file';
     this.newSession = {
       title: '',
       description: '',
@@ -205,7 +209,8 @@ export class SessionsComponent implements OnInit, AfterViewInit {
       endTime: '',
       thumbnail: null as File | null,
       files: null as File[] | null,
-      videos: null as File[] | null
+      videos: null as File[] | null,
+      videoUrls: []
     };
     
     this.showModal();
@@ -214,6 +219,7 @@ export class SessionsComponent implements OnInit, AfterViewInit {
   openEditSessionModal(session: Session): void {
     this.editMode = true;
     this.selectedSession = session;
+    this.videoInputType = 'file';
     this.newSession = {
       title: session.title,
       description: session.description || '',
@@ -225,7 +231,8 @@ export class SessionsComponent implements OnInit, AfterViewInit {
       endTime: session.endTime || '',
       thumbnail: null as File | null,
       files: null as File[] | null,
-      videos: null as File[] | null
+      videos: null as File[] | null,
+      videoUrls: []
     };
     
     this.showModal();
@@ -266,15 +273,69 @@ export class SessionsComponent implements OnInit, AfterViewInit {
 
   onFileChange(event: any, type: 'thumbnail' | 'files' | 'videos'): void {
     const files = event.target.files;
+    console.log('Files selected:', files?.length, 'Type:', type);
     if (files && files.length > 0) {
       if (type === 'thumbnail') {
         this.newSession.thumbnail = files[0] as File;
       } else if (type === 'files') {
         this.newSession.files = Array.from(files) as File[];
+        console.log('Files array:', this.newSession.files.length);
       } else if (type === 'videos') {
-        this.newSession.videos = Array.from(files) as File[];
+        // Append new files to existing array instead of replacing
+        const newFiles = Array.from(files) as File[];
+        if (!this.newSession.videos) {
+          this.newSession.videos = [];
+        }
+        this.newSession.videos = [...this.newSession.videos, ...newFiles];
+        console.log('Videos array:', this.newSession.videos.length);
+        // Clear the input to allow selecting the same file again
+        event.target.value = '';
       }
     }
+  }
+
+  removeVideoFile(index: number): void {
+    if (this.newSession.videos && this.newSession.videos.length > index) {
+      this.newSession.videos.splice(index, 1);
+    }
+  }
+
+  getFileName(file: File): string {
+    return file.name;
+  }
+
+  clearFileInput(inputId: string): void {
+    const input = document.getElementById(inputId) as HTMLInputElement;
+    if (input) {
+      input.value = '';
+    }
+  }
+
+  isValidUrl(url: string): boolean {
+    if (!url || url.trim() === '') return false;
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  addVideoUrl(): void {
+    if (!this.newSession.videoUrls) {
+      this.newSession.videoUrls = [];
+    }
+    this.newSession.videoUrls.push('');
+  }
+
+  removeVideoUrl(index: number): void {
+    if (this.newSession.videoUrls) {
+      this.newSession.videoUrls.splice(index, 1);
+    }
+  }
+
+  trackByIndex(index: number): number {
+    return index;
   }
 
   async saveSession(): Promise<void> {
@@ -282,6 +343,17 @@ export class SessionsComponent implements OnInit, AfterViewInit {
       if (!this.newSession.title || !this.newSession.url || !this.newSession.categoryId || !this.newSession.date || !this.newSession.startTime || !this.newSession.endTime) {
         swalHelper.showToast('Please fill all required fields', 'warning');
         return;
+      }
+
+      // Validate video URLs if using URL mode
+      if (this.videoInputType === 'url' && this.newSession.videoUrls && this.newSession.videoUrls.length > 0) {
+        for (let i = 0; i < this.newSession.videoUrls.length; i++) {
+          const url = this.newSession.videoUrls[i];
+          if (url && url.trim() !== '' && !this.isValidUrl(url)) {
+            swalHelper.showToast(`Please enter a valid URL at position ${i + 1}`, 'error');
+            return;
+          }
+        }
       }
 
       this.loading = true;
@@ -306,9 +378,19 @@ export class SessionsComponent implements OnInit, AfterViewInit {
         });
       }
       
-      if (this.newSession.videos && this.newSession.videos.length > 0) {
+      // Handle video files OR video URLs (same field name 'videos')
+      if (this.videoInputType === 'file' && this.newSession.videos && this.newSession.videos.length > 0) {
+        console.log('Sending video files:', this.newSession.videos.length);
         this.newSession.videos.forEach((file: File) => {
           formData.append('videos', file);
+        });
+      } else if (this.videoInputType === 'url' && this.newSession.videoUrls && this.newSession.videoUrls.length > 0) {
+        // Send URLs as strings in the 'videos' field
+        console.log('Sending video URLs:', this.newSession.videoUrls.length);
+        this.newSession.videoUrls.forEach((url: string) => {
+          if (url && url.trim() !== '') {
+            formData.append('videos', url.trim());
+          }
         });
       }
 

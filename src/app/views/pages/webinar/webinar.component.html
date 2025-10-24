@@ -184,26 +184,8 @@
                   </div>
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label class="form-label">Max Capacity</label>
-                  <input type="number" class="form-control" formControlName="maxCapacity" placeholder="Enter max capacity">
-                  <div *ngIf="webinarForm.get('maxCapacity')?.touched && webinarForm.get('maxCapacity')?.invalid" class="invalid-feedback">
-                    Capacity must be between 1 and 1000
-                  </div>
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Streaming Tech</label>
-                  <select formControlName="streamingTech" class="form-control">
-                    <option value="webrtc">WebRTC</option>
-                    <option value="hls">HLS</option>
-                  </select>
-                </div>
-                <div class="col-md-6 mb-3">
                   <label class="form-label">Category</label>
                   <input type="text" class="form-control" formControlName="category" placeholder="Enter category">
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Assigned Batch</label>
-                  <input type="text" class="form-control" formControlName="assignedBatch" placeholder="Enter batch">
                 </div>
                 <div class="col-md-6 mb-3">
                   <label class="form-label">Description</label>
@@ -223,20 +205,6 @@
                   <label class="form-label">Thumbnail</label>
                   <input type="file" class="form-control" (change)="onFileChange($event)" accept="image/*">
                 </div>
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Allow Chat</label>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" formControlName="allowChat">
-                    <label class="form-check-label">{{ webinarForm.get('allowChat')?.value ? 'Enabled' : 'Disabled' }}</label>
-                  </div>
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Allow Q&A</label>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" formControlName="allowQA">
-                    <label class="form-check-label">{{ webinarForm.get('allowQA')?.value ? 'Enabled' : 'Disabled' }}</label>
-                  </div>
-                </div>
               </div>
             </form>
           </div>
@@ -246,6 +214,10 @@
               <span *ngIf="modalLoading" class="spinner-border spinner-border-sm me-2"></span>
               {{ editMode ? 'Update Webinar' : 'Save Webinar' }}
             </button>
+            <!-- Debug info -->
+            <div *ngIf="webinarForm.invalid" class="text-danger small mt-2">
+              Form is invalid. Check console for details.
+            </div>
           </div>
         </div>
       </div>
