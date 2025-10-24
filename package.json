@@ -9,9 +9,6 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
-  "overrides": {
-    "@rollup/rollup-linux-x64-gnu": "0.0.0"
-  },
   "dependencies": {
     "@angular/animations": "18.2.13",
     "@angular/common": "18.2.13",

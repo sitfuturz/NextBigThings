@@ -11,97 +11,66 @@
         </button>
       </div>
     </div>
-    <div class="card-body p-0">
-      <div class="d-flex flex-wrap justify-content-between align-items-center p-3 border-bottom">
-        <div class="d-flex flex-wrap align-items-center gap-2 mb-2 mb-md-0">
-          <div class="me-2" style="min-width: 200px;">
-            <label for="statusSelect" class="form-label mb-1">Status</label>
-            <select
-              id="statusSelect"
-              class="form-control"
-              [(ngModel)]="filters.status"
-              (change)="onFilterChange()">
-              <option value="">--Select Status--</option>
-              <option value="scheduled">Scheduled</option>
-              <option value="live">Live</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
-          </div>
-          <div class="me-2" style="min-width: 200px;">
-            <label for="accessTypeSelect" class="form-label mb-1">Access Type</label>
-            <select
-              id="accessTypeSelect"
-              class="form-control"
-              [(ngModel)]="filters.accessType"
-              (change)="onFilterChange()">
-              <option value="">--Select Access Type--</option>
-              <option value="free">Free</option>
-              <option value="paid">Paid</option>
-            </select>
-          </div>
-          <div class="me-2">
-            <label for="searchInput" class="form-label mb-1">Search</label>
-            <input
-              id="searchInput"
-              type="text"
-              class="form-control"
-              [(ngModel)]="filters.search"
-              (input)="onFilterChange()"
-              placeholder="Search by title or topic">
-          </div>
-          <div class="me-2">
-            <label for="categoryInput" class="form-label mb-1">Category</label>
-            <input
-              id="categoryInput"
-              type="text"
-              class="form-control"
-              [(ngModel)]="filters.category"
-              (input)="onFilterChange()"
-              placeholder="Enter category">
-          </div>
-          <div class="me-2">
-            <label for="startDateInput" class="form-label mb-1">Start Date</label>
-            <input
-              id="startDateInput"
-              type="date"
-              class="form-control"
-              [(ngModel)]="filters.startDate"
-              (change)="onFilterChange()"
-              placeholder="Start Date">
-          </div>
-          <div class="me-2">
-            <label for="endDateInput" class="form-label mb-1">End Date</label>
-            <input
-              id="endDateInput"
-              type="date"
-              class="form-control"
-              [(ngModel)]="filters.endDate"
-              (change)="onFilterChange()"
-              placeholder="End Date">
-          </div>
-          <div class="mt-4">
-            <button class="btn btn-outline-secondary" (click)="resetFilters()">
-              <i class="bi bi-x-circle me-1"></i>Reset
-            </button>
-          </div>
-        </div>
-        <div class="d-flex align-items-center">
-          <div class="ms-2">
-            <select
-              id="limitSelect"
-              class="form-control"
-              [(ngModel)]="filters.limit"
-              (change)="onFilterChange()">
-              <option value="10">10 per page</option>
-              <option value="25">25 per page</option>
-              <option value="50">50 per page</option>
-              <option value="100">100 per page</option>
-            </select>
-          </div>
-        </div>
+  <div class="card-body p-0">
+  <div class="d-flex flex-wrap justify-content-between align-items-end p-3 border-bottom">
+    <div class="d-flex flex-wrap align-items-end gap-2 mb-2 mb-md-0">
+      <!-- <div class="me-2" style="min-width: 200px;">
+        <label for="statusSelect" class="form-label mb-1">Status</label>
+        <select
+          id="statusSelect"
+          class="form-control"
+          [(ngModel)]="filters.status"
+          (change)="onFilterChange()">
+          <option value="">--Select Status--</option>
+          <option value="scheduled">Scheduled</option>
+          <option value="live">Live</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+      <div class="me-2" style="min-width: 200px;">
+        <label for="accessTypeSelect" class="form-label mb-1">Access Type</label>
+        <select
+          id="accessTypeSelect"
+          class="form-control"
+          [(ngModel)]="filters.accessType"
+          (change)="onFilterChange()">
+          <option value="">--Select Access Type--</option>
+          <option value="free">Free</option>
+          <option value="paid">Paid</option>
+        </select>
+      </div> -->
+      <div class="me-2" style="min-width: 250px;">
+        <label for="searchInput" class="form-label mb-1">Search</label>
+        <input
+          id="searchInput"
+          type="text"
+          class="form-control"
+          [(ngModel)]="filters.search"
+          (input)="onFilterChange()"
+          placeholder="Search webinars">
+      </div>
+      <div>
+        <button class="btn btn-outline-secondary" (click)="resetFilters()">
+          <i class="bi bi-x-circle me-1"></i>Reset
+        </button>
       </div>
     </div>
+    <div class="ms-auto">
+      <select
+        id="limitSelect"
+        class="form-control"
+        [(ngModel)]="filters.limit"
+        (change)="onFilterChange()"
+        style="min-width: 120px;">
+        <option value="10">10 per page</option>
+        <option value="25">25 per page</option>
+        <option value="50">50 per page</option>
+        <option value="100">100 per page</option>
+      </select>
+    </div>
+  </div>
+</div>
 
     <!-- Add/Edit Webinar Modal -->
     <div *ngIf="showWebinarModal" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
