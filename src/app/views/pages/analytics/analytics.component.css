@@ -305,12 +305,12 @@
 }
 
 /* Gradient Text Effects */
-.fw-bold {
+/* .fw-bold {
   background: linear-gradient(45deg, #667eea, #764ba2);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-}
+} */
 
 /* Button Styles */
 .btn {
